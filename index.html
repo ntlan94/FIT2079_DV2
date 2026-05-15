@@ -108,6 +108,21 @@
       <strong>Insight:</strong> This Trellis Scatter Plot uses logarithmic scales to handle massive data variance. It reveals the "Renewable Ecosystem" of postcodes: areas with high solar adoption (moving right) often parallel high heat pump adoption (moving up). The bubble size shows that battery storage is still a premium add-on, with noticeable large "Battery Bubbles" heavily concentrated in SA and select NSW postcodes.
     </p>
   </div>
+  <div class="container">
+    <div id="vis11" class="vis-container"></div>
+    <p style="font-size: 13px; color: #666; margin-top: 15px; font-style: italic; max-width: 800px;">
+      <strong>Insight:</strong> This Dumbbell Plot serves as the conclusion to our analysis. While Australia leads the world in rooftop solar adoption (yellow dots), there is a massive "storage gap." The purple dots show that battery adoption is lagging far behind. The next major phase of Australia's energy transition will not be about generating more power, but storing it.
+    </p>
+  </div>
+  <div style="max-width: 800px; text-align: center; margin-top: 20px; margin-bottom: 60px; padding: 30px; background-color: #2c3e50; color: white; border-radius: 12px;">
+    <h2 style="margin-top: 0; color: #f1c40f;">Conclusion</h2>
+    <p style="line-height: 1.6; font-size: 16px;">
+      Through this comprehensive visual analysis, we have observed Australia's incredible journey toward electrification. From the socio-economic factors driving solar adoption, to the topographic reasons behind hydro power, and the rising trend of heat pumps, the residential energy landscape is rapidly evolving. As shown above, the ultimate challenge moving forward lies in bridging the gap between energy generation and battery storage to ensure a sustainable, 24/7 renewable future.
+    </p>
+    <p style="margin-top: 20px; font-size: 14px; color: #bdc3c7;">
+      Created for FIT2079 Data Visualization 2 | Monash University
+    </p>
+  </div>
 
 <script type="text/javascript">
     var spec1 = "json/Australian_Residential_Solar_PV_Adoption_Map.vg.json";
@@ -139,6 +154,9 @@
   
     var spec10 = "json/ecosystem_trellis.vg.json";
     vegaEmbed('#vis10', spec10).then(function(result){}).catch(console.error);
+
+    var spec11 = "json/battery_gap_dumbbell.vg.json";
+    vegaEmbed('#vis11', spec11).catch(console.error);
   </script>
 
 </body>
