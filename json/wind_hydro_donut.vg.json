@@ -12,7 +12,10 @@
       "width": 300,
       "height": 300,
       "title": {"text": "Wind Power Installations", "color": "#34495e"},
-      "data": {"url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-wind-installations.csv", "format": {"type": "csv"}},
+      "data": {
+        "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-wind-installations.csv",
+        "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
+      },
       "transform": [
         {"calculate": "toString(datum.Postcode)", "as": "PC"},
         {"calculate": "length(datum.PC) == 3 ? '0' + datum.PC : datum.PC", "as": "PC_pad"},
@@ -38,7 +41,10 @@
       "width": 300,
       "height": 300,
       "title": {"text": "Hydro Power Installations", "color": "#34495e"},
-      "data": {"url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-hydro-installations.csv", "format": {"type": "csv"}},
+      "data": {
+        "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-hydro-installations.csv",
+        "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
+      },
       "transform": [
         {"calculate": "toString(datum.Postcode)", "as": "PC"},
         {"calculate": "length(datum.PC) == 3 ? '0' + datum.PC : datum.PC", "as": "PC_pad"},
