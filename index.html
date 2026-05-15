@@ -72,6 +72,12 @@
   <div class="container">
     <div id="vis4" class="vis-container"></div>
   </div>
+  <div class="container">
+    <div id="vis5" class="vis-container"></div>
+    <p style="font-size: 13px; color: #666; margin-top: 15px; font-style: italic; max-width: 800px;">
+      <strong>Insight:</strong> While solar dominates the national landscape, micro-hydro systems find a strong niche in Tasmania (TAS) due to its unique topography and water resources. Conversely, coastal states lead in micro-wind adoption.
+    </p>
+  </div>
 
 <script type="text/javascript">
     var spec1 = "json/Australian_Residential_Solar_PV_Adoption_Map.vg.json";
@@ -85,6 +91,9 @@
 
     var spec4 = "json/SEIFA_vs_solar_install.vg.json";
     vegaEmbed('#vis4', spec4).then(function(result){}).catch(console.error);
+    
+    var spec5 = "json/wind_hydro_donut.vg.json";
+    vegaEmbed('#vis5', spec5).catch(console.error);
   </script>
 
 </body>
