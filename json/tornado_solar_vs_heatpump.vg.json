@@ -11,7 +11,7 @@
   "height": 350,
   "data": {
     "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-solar-installations.csv",
-    "format": {"type": "csv"}
+    "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
   },
   "transform": [
     {
@@ -23,7 +23,7 @@
       "from": {
         "data": {
           "url": "https://ntlan94.github.io/FIT2079_DV2/data/swh-air-source-heat-pump-installations.csv",
-          "format": {"type": "csv"}
+          "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
         },
         "key": "Postcode",
         "fields": ["Total"]
@@ -31,11 +31,11 @@
       "as": ["HP_Qty"]
     },
     {
-      "calculate": "isValid(datum.HP_Qty) ? toNumber(datum.HP_Qty) : 0",
+      "calculate": "isValid(datum.HP_Qty) ? datum.HP_Qty : 0",
       "as": "HP_Qty_Num"
     },
     {
-      "calculate": "isValid(datum.Total) ? toNumber(datum.Total) : 0",
+      "calculate": "isValid(datum.Total) ? datum.Total : 0",
       "as": "Solar_Qty_Num"
     },
     {
