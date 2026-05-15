@@ -102,6 +102,12 @@
       <strong>Insight:</strong> This 2D Density Heatmap reveals that the vast majority of Australian postcodes cluster tightly in the lower-left quadrant (fewer than 10,000 systems and 50,000 kW capacity). The rare dark outliers stretching toward the top right represent massive urban development zones heavily investing in rooftop solar.
     </p>
   </div>
+  <div class="container">
+    <div id="vis10" class="vis-container"></div>
+    <p style="font-size: 13px; color: #666; margin-top: 15px; font-style: italic; max-width: 800px;">
+      <strong>Insight:</strong> This Trellis Scatter Plot uses logarithmic scales to handle massive data variance. It reveals the "Renewable Ecosystem" of postcodes: areas with high solar adoption (moving right) often parallel high heat pump adoption (moving up). The bubble size shows that battery storage is still a premium add-on, with noticeable large "Battery Bubbles" heavily concentrated in SA and select NSW postcodes.
+    </p>
+  </div>
 
 <script type="text/javascript">
     var spec1 = "json/Australian_Residential_Solar_PV_Adoption_Map.vg.json";
@@ -130,6 +136,9 @@
 
     var spec9 = "json/capacity_density_heatmap.vg.json";
     vegaEmbed('#vis9', spec9).then(function(result){}).catch(console.error);
+  
+    var spec10 = "json/ecosystem_trellis.vg.json";
+    vegaEmbed('#vis10', spec10).then(function(result){}).catch(console.error);
   </script>
 
 </body>
