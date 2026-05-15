@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;700&display=swap');
+
+body {
+    font-family: 'Urbanist', sans-serif;
+    background-color: #f4f7f6;
+    margin: 0;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.container {
+    background-color: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 40px;
+    width: fit-content;
+    max-width: 95%; 
+}
+
+h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+p.description {
+    color: #7f8c8d;
+    max-width: 800px;
+    text-align: center;
+    margin-bottom: 40px;
+    line-height: 1.6;
+}
+
+.vis-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.insight-text {
+    font-size: 13px;
+    color: #666;
+    margin-top: 15px;
+    font-style: italic;
+    max-width: 800px;
+    line-height: 1.5;
+}
+
+.conclusion-box {
+    max-width: 800px;
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 60px;
+    padding: 40px;
+    background-color: #2c3e50;
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.conclusion-box h2 {
+    margin-top: 0;
+    color: #f1c40f;
+}
+
+.conclusion-box p {
+    line-height: 1.8;
+    font-size: 16px;
+}
+
+.footer-credit {
+    margin-top: 25px;
+    font-size: 14px;
+    color: #bdc3c7;
+}
