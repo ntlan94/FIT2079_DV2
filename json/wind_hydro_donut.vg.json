@@ -1,8 +1,5 @@
 {
-  "$schema": "https://vega.github.io/schema/vega/v6.json",
-  "background": "white",
-  "padding": 5,
-  "height": 300,
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": {
     "text": "Beyond Solar: Small-Scale Wind vs. Hydro Adoption",
     "subtitle": "National distribution by State (Extracted dynamically from Postcodes)",
@@ -10,226 +7,59 @@
     "anchor": "start",
     "color": "#2c3e50"
   },
-  "data": [
+  "hconcat": [
     {
-      "name": "source_0",
-      "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-wind-installations.csv",
-      "format": {"type": "csv", "delimiter": ","},
+      "width": 300,
+      "height": 300,
+      "title": {"text": "Wind Power Installations", "color": "#34495e"},
+      "data": {"url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-wind-installations.csv", "format": {"type": "csv"}},
       "transform": [
-        {
-          "type": "formula",
-          "expr": "toString(datum['Small Unit Installation Postcode'])",
-          "as": "PC"
+        {"calculate": "toString(datum.Postcode)", "as": "PC"},
+        {"calculate": "length(datum.PC) == 3 ? '0' + datum.PC : datum.PC", "as": "PC_pad"},
+        {"calculate": "datum.PC_pad[0] == '0' ? 'NT' : datum.PC_pad[0] == '2' ? 'NSW/ACT' : datum.PC_pad[0] == '3' ? 'VIC' : datum.PC_pad[0] == '4' ? 'QLD' : datum.PC_pad[0] == '5' ? 'SA' : datum.PC_pad[0] == '6' ? 'WA' : datum.PC_pad[0] == '7' ? 'TAS' : 'Other'", "as": "State"},
+        {"aggregate": [{"op": "sum", "field": "Total", "as": "Total_Qty"}], "groupby": ["State"]}
+      ],
+      "mark": {"type": "arc", "innerRadius": 70, "padAngle": 0.03, "cornerRadius": 4},
+      "encoding": {
+        "theta": {"field": "Total_Qty", "type": "quantitative"},
+        "color": {
+          "field": "State",
+          "type": "nominal",
+          "scale": {"scheme": "set2"},
+          "legend": {"title": "State / Territory", "orient": "bottom", "columns": 4}
         },
-        {
-          "type": "formula",
-          "expr": "length(datum.PC) == 3 ? '0' + datum.PC : datum.PC",
-          "as": "PC_pad"
-        },
-        {
-          "type": "formula",
-          "expr": "datum.PC_pad[0] == '0' ? 'NT' : datum.PC_pad[0] == '2' ? 'NSW/ACT' : datum.PC_pad[0] == '3' ? 'VIC' : datum.PC_pad[0] == '4' ? 'QLD' : datum.PC_pad[0] == '5' ? 'SA' : datum.PC_pad[0] == '6' ? 'WA' : datum.PC_pad[0] == '7' ? 'TAS' : 'Other'",
-          "as": "State"
-        },
-        {
-          "type": "aggregate",
-          "groupby": ["State"],
-          "ops": ["sum"],
-          "fields": ["Total Installation Quantity"],
-          "as": ["Total"]
-        },
-        {
-          "type": "stack",
-          "groupby": [],
-          "field": "Total",
-          "sort": {"field": ["State"], "order": ["ascending"]},
-          "as": ["Total_start", "Total_end"],
-          "offset": "zero"
-        },
-        {
-          "type": "filter",
-          "expr": "isValid(datum[\"Total\"]) && isFinite(+datum[\"Total\"])"
-        }
-      ]
+        "tooltip": [
+          {"field": "State", "type": "nominal"},
+          {"field": "Total_Qty", "type": "quantitative", "title": "Wind Systems Installed", "format": ","}
+        ]
+      }
     },
     {
-      "name": "source_1",
-      "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-hydro-installations.csv",
-      "format": {"type": "csv", "delimiter": ","},
+      "width": 300,
+      "height": 300,
+      "title": {"text": "Hydro Power Installations", "color": "#34495e"},
+      "data": {"url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-hydro-installations.csv", "format": {"type": "csv"}},
       "transform": [
-        {
-          "type": "formula",
-          "expr": "toString(datum['Small Unit Installation Postcode'])",
-          "as": "PC"
+        {"calculate": "toString(datum.Postcode)", "as": "PC"},
+        {"calculate": "length(datum.PC) == 3 ? '0' + datum.PC : datum.PC", "as": "PC_pad"},
+        {"calculate": "datum.PC_pad[0] == '0' ? 'NT' : datum.PC_pad[0] == '2' ? 'NSW/ACT' : datum.PC_pad[0] == '3' ? 'VIC' : datum.PC_pad[0] == '4' ? 'QLD' : datum.PC_pad[0] == '5' ? 'SA' : datum.PC_pad[0] == '6' ? 'WA' : datum.PC_pad[0] == '7' ? 'TAS' : 'Other'", "as": "State"},
+        {"aggregate": [{"op": "sum", "field": "Total", "as": "Total_Qty"}], "groupby": ["State"]}
+      ],
+      "mark": {"type": "arc", "innerRadius": 70, "padAngle": 0.03, "cornerRadius": 4},
+      "encoding": {
+        "theta": {"field": "Total_Qty", "type": "quantitative"},
+        "color": {
+          "field": "State",
+          "type": "nominal",
+          "scale": {"scheme": "set2"},
+          "legend": null
         },
-        {
-          "type": "formula",
-          "expr": "length(datum.PC) == 3 ? '0' + datum.PC : datum.PC",
-          "as": "PC_pad"
-        },
-        {
-          "type": "formula",
-          "expr": "datum.PC_pad[0] == '0' ? 'NT' : datum.PC_pad[0] == '2' ? 'NSW/ACT' : datum.PC_pad[0] == '3' ? 'VIC' : datum.PC_pad[0] == '4' ? 'QLD' : datum.PC_pad[0] == '5' ? 'SA' : datum.PC_pad[0] == '6' ? 'WA' : datum.PC_pad[0] == '7' ? 'TAS' : 'Other'",
-          "as": "State"
-        },
-        {
-          "type": "aggregate",
-          "groupby": ["State"],
-          "ops": ["sum"],
-          "fields": ["Total Installation Quantity"],
-          "as": ["Total"]
-        },
-        {
-          "type": "stack",
-          "groupby": [],
-          "field": "Total",
-          "sort": {"field": ["State"], "order": ["ascending"]},
-          "as": ["Total_start", "Total_end"],
-          "offset": "zero"
-        },
-        {
-          "type": "filter",
-          "expr": "isValid(datum[\"Total\"]) && isFinite(+datum[\"Total\"])"
-        }
-      ]
+        "tooltip": [
+          {"field": "State", "type": "nominal"},
+          {"field": "Total_Qty", "type": "quantitative", "title": "Hydro Systems Installed", "format": ","}
+        ]
+      }
     }
   ],
-  "signals": [{"name": "childWidth", "value": 300}],
-  "layout": {"padding": 20, "bounds": "full", "align": "each"},
-  "marks": [
-    {
-      "type": "group",
-      "name": "concat_0_group",
-      "title": {
-        "text": "Wind Power Installations",
-        "color": "#34495e",
-        "frame": "group"
-      },
-      "style": "view",
-      "encode": {
-        "update": {
-          "width": {"signal": "childWidth"},
-          "height": {"signal": "height"}
-        }
-      },
-      "marks": [
-        {
-          "name": "concat_0_marks",
-          "type": "arc",
-          "style": ["arc"],
-          "from": {"data": "source_0"},
-          "encode": {
-            "update": {
-              "padAngle": {"value": 0.03},
-              "innerRadius": {"value": 70},
-              "cornerRadius": {"value": 4},
-              "fill": {"scale": "color", "field": "State"},
-              "tooltip": {
-                "signal": "{\"State\": isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], '\\n') : datum[\"State\"] : \"\"+datum[\"State\"], \"Wind Systems Installed\": format(datum[\"Total\"], \"\")}"
-              },
-              "description": {
-                "signal": "\"Total: \" + (format(datum[\"Total\"], \"\")) + \"; State: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"]) + \"; Wind Systems Installed: \" + (format(datum[\"Total\"], \"\"))"
-              },
-              "x": {"signal": "childWidth", "mult": 0.5},
-              "y": {"signal": "height", "mult": 0.5},
-              "outerRadius": {"signal": "min(childWidth,height)/2"},
-              "startAngle": {"scale": "concat_0_theta", "field": "Total_end"},
-              "endAngle": {"scale": "concat_0_theta", "field": "Total_start"}
-            }
-          }
-        }
-      ]
-    },
-    {
-      "type": "group",
-      "name": "concat_1_group",
-      "title": {
-        "text": "Hydro Power Installations",
-        "color": "#34495e",
-        "frame": "group"
-      },
-      "style": "view",
-      "encode": {
-        "update": {
-          "width": {"signal": "childWidth"},
-          "height": {"signal": "height"}
-        }
-      },
-      "marks": [
-        {
-          "name": "concat_1_marks",
-          "type": "arc",
-          "style": ["arc"],
-          "from": {"data": "source_1"},
-          "encode": {
-            "update": {
-              "padAngle": {"value": 0.03},
-              "innerRadius": {"value": 70},
-              "cornerRadius": {"value": 4},
-              "fill": {"scale": "color", "field": "State"},
-              "tooltip": {
-                "signal": "{\"State\": isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], '\\n') : datum[\"State\"] : \"\"+datum[\"State\"], \"Hydro Systems Installed\": format(datum[\"Total\"], \"\")}"
-              },
-              "description": {
-                "signal": "\"Total: \" + (format(datum[\"Total\"], \"\")) + \"; State: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"]) + \"; Hydro Systems Installed: \" + (format(datum[\"Total\"], \"\"))"
-              },
-              "x": {"signal": "childWidth", "mult": 0.5},
-              "y": {"signal": "height", "mult": 0.5},
-              "outerRadius": {"signal": "min(childWidth,height)/2"},
-              "startAngle": {"scale": "concat_1_theta", "field": "Total_end"},
-              "endAngle": {"scale": "concat_1_theta", "field": "Total_start"}
-            }
-          }
-        }
-      ]
-    }
-  ],
-  "scales": [
-    {
-      "name": "color",
-      "type": "ordinal",
-      "domain": {
-        "fields": [
-          {"data": "source_0", "field": "State"},
-          {"data": "source_1", "field": "State"}
-        ],
-        "sort": true
-      },
-      "range": {"scheme": "set2"}
-    },
-    {
-      "name": "concat_0_theta",
-      "type": "linear",
-      "domain": {"data": "source_0", "fields": ["Total_start", "Total_end"]},
-      "range": [0, 6.283185307179586],
-      "zero": true
-    },
-    {
-      "name": "concat_1_theta",
-      "type": "linear",
-      "domain": {"data": "source_1", "fields": ["Total_start", "Total_end"]},
-      "range": [0, 6.283185307179586],
-      "zero": true
-    }
-  ],
-  "legends": [
-    {
-      "columns": 4,
-      "orient": "bottom",
-      "title": "State / Territory",
-      "fill": "color",
-      "direction": "horizontal",
-      "symbolType": "circle"
-    }
-  ],
-  "config": {
-    "style": {
-      "guide-label": {"font": "sans-serif"},
-      "guide-title": {"font": "sans-serif"},
-      "group-title": {"font": "sans-serif"},
-      "group-subtitle": {"font": "sans-serif"},
-      "cell": {"stroke": "transparent"},
-      "text": {"font": "sans-serif"}
-    }
-  }
+  "config": {"view": {"stroke": "transparent"}, "font": "sans-serif"}
 }
