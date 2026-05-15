@@ -1,9 +1,5 @@
 {
-  "$schema": "https://vega.github.io/schema/vega/v6.json",
-  "background": "white",
-  "padding": 5,
-  "width": 650,
-  "height": 350,
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": {
     "text": "Electrification: Solar PV vs. Heat Pump Adoption",
     "subtitle": "Comparing total installations by State (Diverging Tornado Chart)",
@@ -11,309 +7,110 @@
     "anchor": "start",
     "color": "#2c3e50"
   },
-  "style": "cell",
-  "data": [
+  "width": 650,
+  "height": 350,
+  "data": {
+    "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-solar-installations.csv",
+    "format": {"type": "csv"}
+  },
+  "transform": [
     {
-      "name": "source_1",
-      "url": "https://ntlan94.github.io/FIT2079_DV2/data/swh-air-source-heat-pump-installations.csv",
-      "format": {"type": "csv", "delimiter": ","}
+      "calculate": "toString(datum.Postcode)",
+      "as": "PC"
     },
     {
-      "name": "source_0",
-      "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-solar-installations.csv",
-      "format": {"type": "csv", "delimiter": ","},
-      "transform": [
-        {"type": "formula", "expr": "toString(datum.Postcode)", "as": "PC"},
-        {
-          "type": "lookup",
-          "from": "source_1",
-          "key": "Small Unit Installation Postcode",
-          "fields": ["PC"],
-          "values": ["Total Installation Quantity"],
-          "as": ["HP_Qty"]
+      "lookup": "PC",
+      "from": {
+        "data": {
+          "url": "https://ntlan94.github.io/FIT2079_DV2/data/swh-air-source-heat-pump-installations.csv",
+          "format": {"type": "csv"}
         },
-        {
-          "type": "formula",
-          "expr": "isValid(datum.HP_Qty) ? toNumber(datum.HP_Qty) : 0",
-          "as": "HP_Qty_Num"
-        },
-        {
-          "type": "formula",
-          "expr": "isValid(datum.Total) ? toNumber(datum.Total) : 0",
-          "as": "Solar_Qty_Num"
-        },
-        {
-          "type": "formula",
-          "expr": "length(datum.PC) == 3 ? '0' + datum.PC : datum.PC",
-          "as": "PC_pad"
-        },
-        {
-          "type": "formula",
-          "expr": "datum.PC_pad[0] == '0' ? 'NT' : datum.PC_pad[0] == '2' ? 'NSW' : datum.PC_pad[0] == '3' ? 'VIC' : datum.PC_pad[0] == '4' ? 'QLD' : datum.PC_pad[0] == '5' ? 'SA' : datum.PC_pad[0] == '6' ? 'WA' : datum.PC_pad[0] == '7' ? 'TAS' : 'Other'",
-          "as": "State"
-        },
-        {"type": "filter", "expr": "datum.State != 'Other'"},
-        {
-          "type": "aggregate",
-          "groupby": ["State"],
-          "ops": ["sum", "sum"],
-          "fields": ["Solar_Qty_Num", "HP_Qty_Num"],
-          "as": ["Sum_Solar", "Sum_HP"]
-        },
-        {"type": "formula", "expr": "-datum.Sum_Solar", "as": "Negative_Solar"}
-      ]
+        "key": "Postcode",
+        "fields": ["Total"]
+      },
+      "as": ["HP_Qty"]
     },
     {
-      "name": "data_1",
-      "source": "source_0",
-      "transform": [
-        {
-          "type": "stack",
-          "groupby": ["State"],
+      "calculate": "isValid(datum.HP_Qty) ? toNumber(datum.HP_Qty) : 0",
+      "as": "HP_Qty_Num"
+    },
+    {
+      "calculate": "isValid(datum.Total) ? toNumber(datum.Total) : 0",
+      "as": "Solar_Qty_Num"
+    },
+    {
+      "calculate": "length(datum.PC) == 3 ? '0' + datum.PC : datum.PC",
+      "as": "PC_pad"
+    },
+    {
+      "calculate": "datum.PC_pad[0] == '0' ? 'NT' : datum.PC_pad[0] == '2' ? 'NSW' : datum.PC_pad[0] == '3' ? 'VIC' : datum.PC_pad[0] == '4' ? 'QLD' : datum.PC_pad[0] == '5' ? 'SA' : datum.PC_pad[0] == '6' ? 'WA' : datum.PC_pad[0] == '7' ? 'TAS' : 'Other'",
+      "as": "State"
+    },
+    {
+      "filter": "datum.State != 'Other'"
+    },
+    {
+      "aggregate": [
+        {"op": "sum", "field": "Solar_Qty_Num", "as": "Sum_Solar"},
+        {"op": "sum", "field": "HP_Qty_Num", "as": "Sum_HP"}
+      ],
+      "groupby": ["State"]
+    },
+    {
+      "calculate": "-datum.Sum_Solar",
+      "as": "Negative_Solar"
+    }
+  ],
+  "layer": [
+    {
+      "mark": {"type": "bar", "color": "#f1c40f", "cornerRadiusTopLeft": 4, "cornerRadiusBottomLeft": 4},
+      "encoding": {
+        "x": {
           "field": "Negative_Solar",
-          "sort": {"field": [], "order": []},
-          "as": ["Negative_Solar_start", "Negative_Solar_end"],
-          "offset": "zero"
-        },
-        {
-          "type": "filter",
-          "expr": "isValid(datum[\"Negative_Solar\"]) && isFinite(+datum[\"Negative_Solar\"])"
-        }
-      ]
-    },
-    {
-      "name": "data_2",
-      "source": "source_0",
-      "transform": [
-        {
-          "type": "stack",
-          "groupby": ["State"],
-          "field": "Sum_HP",
-          "sort": {"field": [], "order": []},
-          "as": ["Sum_HP_start", "Sum_HP_end"],
-          "offset": "zero"
-        },
-        {
-          "type": "filter",
-          "expr": "isValid(datum[\"Sum_HP\"]) && isFinite(+datum[\"Sum_HP\"])"
-        }
-      ]
-    }
-  ],
-  "marks": [
-    {
-      "type": "group",
-      "from": {
-        "facet": {
-          "data": "data_1",
-          "name": "stack_group_layer_0_main",
-          "groupby": ["State"],
-          "aggregate": {
-            "fields": [
-              "Negative_Solar_start",
-              "Negative_Solar_start",
-              "Negative_Solar_end",
-              "Negative_Solar_end"
-            ],
-            "ops": ["min", "max", "min", "max"]
+          "type": "quantitative",
+          "title": "← Solar PV Systems | Heat Pump Systems →",
+          "axis": {
+            "labelExpr": "abs(datum.value) / 1000 + 'k'",
+            "tickCount": 6
           }
-        }
-      },
-      "encode": {
-        "update": {
-          "y": {"scale": "y", "field": "State"},
-          "height": {"signal": "max(0.25, bandwidth('y'))"},
-          "cornerRadiusTopLeft": {"value": 4},
-          "cornerRadiusBottomLeft": {"value": 4},
-          "x": {
-            "signal": "min(scale('x',datum[\"min_Negative_Solar_start\"]),scale('x',datum[\"max_Negative_Solar_start\"]),scale('x',datum[\"min_Negative_Solar_end\"]),scale('x',datum[\"max_Negative_Solar_end\"]))"
+        },
+        "y": {
+          "field": "State",
+          "type": "nominal",
+          "axis": {
+            "title": "",
+            "labelFontWeight": "bold",
+            "labelFontSize": 12
           },
-          "x2": {
-            "signal": "max(scale('x',datum[\"min_Negative_Solar_start\"]),scale('x',datum[\"max_Negative_Solar_start\"]),scale('x',datum[\"min_Negative_Solar_end\"]),scale('x',datum[\"max_Negative_Solar_end\"]))"
-          },
-          "clip": {"value": true}
-        }
-      },
-      "marks": [
-        {
-          "type": "group",
-          "encode": {
-            "update": {
-              "x": {"field": {"group": "x"}, "mult": -1},
-              "height": {"field": {"group": "height"}}
-            }
-          },
-          "marks": [
-            {
-              "name": "layer_0_marks",
-              "type": "rect",
-              "style": ["bar"],
-              "from": {"data": "stack_group_layer_0_main"},
-              "encode": {
-                "update": {
-                  "fill": {"value": "#f1c40f"},
-                  "tooltip": {
-                    "signal": "{\"State\": isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], '\\n') : datum[\"State\"] : \"\"+datum[\"State\"], \"Total Solar Installations\": format(datum[\"Sum_Solar\"], \",\")}"
-                  },
-                  "ariaRoleDescription": {"value": "bar"},
-                  "description": {
-                    "signal": "\"← Solar PV Systems | Heat Pump Systems →: \" + (format(datum[\"Negative_Solar\"], \"\")) + \"; State: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"]) + \"; Total Solar Installations: \" + (format(datum[\"Sum_Solar\"], \",\"))"
-                  },
-                  "x": {"scale": "x", "field": "Negative_Solar_end"},
-                  "x2": {"scale": "x", "field": "Negative_Solar_start"},
-                  "height": {"field": {"group": "height"}}
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "group",
-      "from": {
-        "facet": {
-          "data": "data_2",
-          "name": "stack_group_layer_1_main",
-          "groupby": ["State"],
-          "aggregate": {
-            "fields": [
-              "Sum_HP_start",
-              "Sum_HP_start",
-              "Sum_HP_end",
-              "Sum_HP_end"
-            ],
-            "ops": ["min", "max", "min", "max"]
-          }
-        }
-      },
-      "encode": {
-        "update": {
-          "y": {"scale": "y", "field": "State"},
-          "height": {"signal": "max(0.25, bandwidth('y'))"},
-          "cornerRadiusTopRight": {"value": 4},
-          "cornerRadiusBottomRight": {"value": 4},
-          "x": {
-            "signal": "min(scale('x',datum[\"min_Sum_HP_start\"]),scale('x',datum[\"max_Sum_HP_start\"]),scale('x',datum[\"min_Sum_HP_end\"]),scale('x',datum[\"max_Sum_HP_end\"]))"
-          },
-          "x2": {
-            "signal": "max(scale('x',datum[\"min_Sum_HP_start\"]),scale('x',datum[\"max_Sum_HP_start\"]),scale('x',datum[\"min_Sum_HP_end\"]),scale('x',datum[\"max_Sum_HP_end\"]))"
-          },
-          "clip": {"value": true}
-        }
-      },
-      "marks": [
-        {
-          "type": "group",
-          "encode": {
-            "update": {
-              "x": {"field": {"group": "x"}, "mult": -1},
-              "height": {"field": {"group": "height"}}
-            }
-          },
-          "marks": [
-            {
-              "name": "layer_1_marks",
-              "type": "rect",
-              "style": ["bar"],
-              "from": {"data": "stack_group_layer_1_main"},
-              "encode": {
-                "update": {
-                  "fill": {"value": "#e74c3c"},
-                  "tooltip": {
-                    "signal": "{\"State\": isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], '\\n') : datum[\"State\"] : \"\"+datum[\"State\"], \"Total Heat Pump Installations\": format(datum[\"Sum_HP\"], \",\")}"
-                  },
-                  "ariaRoleDescription": {"value": "bar"},
-                  "description": {
-                    "signal": "\"Sum_HP: \" + (format(datum[\"Sum_HP\"], \"\")) + \"; State: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"]) + \"; Total Heat Pump Installations: \" + (format(datum[\"Sum_HP\"], \",\"))"
-                  },
-                  "x": {"scale": "x", "field": "Sum_HP_end"},
-                  "x2": {"scale": "x", "field": "Sum_HP_start"},
-                  "height": {"field": {"group": "height"}}
-                }
-              }
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "scales": [
-    {
-      "name": "x",
-      "type": "linear",
-      "domain": {
-        "fields": [
-          {"data": "data_1", "field": "Negative_Solar_start"},
-          {"data": "data_1", "field": "Negative_Solar_end"},
-          {"data": "data_2", "field": "Sum_HP_start"},
-          {"data": "data_2", "field": "Sum_HP_end"}
+          "sort": {"field": "Sum_Solar", "order": "descending"}
+        },
+        "tooltip": [
+          {"field": "State", "type": "nominal"},
+          {"field": "Sum_Solar", "type": "quantitative", "title": "Total Solar Installations", "format": ","}
         ]
-      },
-      "range": [0, {"signal": "width"}],
-      "nice": true,
-      "zero": true
+      }
     },
     {
-      "name": "y",
-      "type": "band",
-      "domain": {
-        "data": "source_0",
-        "field": "State",
-        "sort": {"op": "sum", "field": "Sum_Solar", "order": "descending"}
-      },
-      "range": [0, {"signal": "height"}],
-      "paddingInner": 0.1,
-      "paddingOuter": 0.05
-    }
-  ],
-  "axes": [
-    {
-      "scale": "x",
-      "orient": "bottom",
-      "tickCount": 6,
-      "gridScale": "y",
-      "grid": true,
-      "domain": false,
-      "labels": false,
-      "aria": false,
-      "maxExtent": 0,
-      "minExtent": 0,
-      "ticks": false,
-      "zindex": 0
-    },
-    {
-      "scale": "x",
-      "orient": "bottom",
-      "grid": false,
-      "title": "← Solar PV Systems | Heat Pump Systems →",
-      "tickCount": 6,
-      "labelFlush": true,
-      "labelOverlap": true,
-      "encode": {
-        "labels": {
-          "update": {"text": {"signal": "abs(datum.value) / 1000 + 'k'"}}
-        }
-      },
-      "zindex": 0
-    },
-    {
-      "scale": "y",
-      "orient": "left",
-      "grid": false,
-      "labelFontSize": 12,
-      "labelFontWeight": "bold",
-      "zindex": 0
+      "mark": {"type": "bar", "color": "#e74c3c", "cornerRadiusTopRight": 4, "cornerRadiusBottomRight": 4},
+      "encoding": {
+        "x": {
+          "field": "Sum_HP",
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "State",
+          "type": "nominal",
+          "sort": {"field": "Sum_Solar", "order": "descending"}
+        },
+        "tooltip": [
+          {"field": "State", "type": "nominal"},
+          {"field": "Sum_HP", "type": "quantitative", "title": "Total Heat Pump Installations", "format": ","}
+        ]
+      }
     }
   ],
   "config": {
-    "style": {
-      "guide-label": {"font": "sans-serif"},
-      "guide-title": {"font": "sans-serif"},
-      "group-title": {"font": "sans-serif"},
-      "group-subtitle": {"font": "sans-serif"},
-      "cell": {"stroke": "transparent"},
-      "text": {"font": "sans-serif"}
-    }
+    "view": {"stroke": "transparent"},
+    "font": "sans-serif"
   }
 }
