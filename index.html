@@ -96,6 +96,12 @@
       <strong>Insight:</strong> This normalized area chart highlights the evolution of the residential battery market. Notice the early dominance of South Australia (SA) around 2016-2018, which has gradually given way to New South Wales (NSW) and Victoria (VIC) as national adoption broadened.
     </p>
   </div>
+  <div class="container">
+    <div id="vis9" class="vis-container"></div>
+    <p style="font-size: 13px; color: #666; margin-top: 15px; font-style: italic; max-width: 800px;">
+      <strong>Insight:</strong> This 2D Density Heatmap reveals that the vast majority of Australian postcodes cluster tightly in the lower-left quadrant (fewer than 10,000 systems and 50,000 kW capacity). The rare dark outliers stretching toward the top right represent massive urban development zones heavily investing in rooftop solar.
+    </p>
+  </div>
 
 <script type="text/javascript">
     var spec1 = "json/Australian_Residential_Solar_PV_Adoption_Map.vg.json";
@@ -121,6 +127,9 @@
     
     var spec8 = "json/battery_market_share.vg.json";
     vegaEmbed('#vis8', spec8).then(function(result){}).catch(console.error);
+
+    var spec9 = "json/capacity_density_heatmap.vg.json";
+    vegaEmbed('#vis9', spec9).then(function(result){}).catch(console.error);
   </script>
 
 </body>
