@@ -1,7 +1,5 @@
 {
-  "$schema": "https://vega.github.io/schema/vega/v6.json",
-  "background": "white",
-  "padding": 5,
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": {
     "text": "The Renewable Ecosystem by State",
     "subtitle": "Trellis Scatter Plot: Solar (X) vs. Heat Pump (Y) vs. Battery (Size)",
@@ -9,301 +7,89 @@
     "anchor": "start",
     "color": "#2c3e50"
   },
-  "data": [
+  "data": {
+    "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-solar-installations.csv",
+    "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
+  },
+  "transform": [
+    {"calculate": "toString(datum.Postcode)", "as": "PC"},
+    {"calculate": "isValid(datum.Total) ? datum.Total : 0", "as": "Solar"},
     {
-      "name": "source_1",
-      "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-battery-installations.csv",
-      "format": {"type": "csv", "delimiter": ","}
-    },
-    {
-      "name": "source_2",
-      "url": "https://ntlan94.github.io/FIT2079_DV2/data/swh-air-source-heat-pump-installations.csv",
-      "format": {"type": "csv", "delimiter": ","}
-    },
-    {
-      "name": "source_0",
-      "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-solar-installations.csv",
-      "format": {
-        "type": "csv",
-        "parse": {"Postcode": "string", "Total": "number"},
-        "delimiter": ","
-      },
-      "transform": [
-        {"type": "formula", "expr": "toString(datum.Postcode)", "as": "PC"},
-        {
-          "type": "formula",
-          "expr": "isValid(datum.Total) ? datum.Total : 0",
-          "as": "Solar"
-        },
-        {
-          "type": "lookup",
-          "from": "source_1",
-          "key": "Postcode",
-          "fields": ["PC"],
-          "values": ["Total"],
-          "as": ["Battery"]
-        },
-        {
-          "type": "lookup",
-          "from": "source_2",
-          "key": "Postcode",
-          "fields": ["PC"],
-          "values": ["Total"],
-          "as": ["HP"]
-        },
-        {
-          "type": "formula",
-          "expr": "isValid(datum.Battery) ? datum.Battery : 0",
-          "as": "Battery_Num"
-        },
-        {
-          "type": "formula",
-          "expr": "isValid(datum.HP) ? datum.HP : 0",
-          "as": "HP_Num"
-        },
-        {
-          "type": "formula",
-          "expr": "length(datum.PC) == 3 ? '0' + datum.PC : datum.PC",
-          "as": "PC_pad"
-        },
-        {
-          "type": "formula",
-          "expr": "datum.PC_pad[0] == '2' ? 'NSW' : datum.PC_pad[0] == '3' ? 'VIC' : datum.PC_pad[0] == '4' ? 'QLD' : datum.PC_pad[0] == '5' ? 'SA' : datum.PC_pad[0] == '6' ? 'WA' : datum.PC_pad[0] == '7' ? 'TAS' : 'Other'",
-          "as": "State"
-        },
-        {
-          "type": "filter",
-          "expr": "datum.State != 'Other' && datum.Solar > 0 && datum.HP_Num > 0"
-        },
-        {
-          "type": "formula",
-          "expr": "datum[\"State\"]===\"NSW\" ? 0 : datum[\"State\"]===\"VIC\" ? 1 : datum[\"State\"]===\"QLD\" ? 2 : datum[\"State\"]===\"WA\" ? 3 : datum[\"State\"]===\"SA\" ? 4 : datum[\"State\"]===\"TAS\" ? 5 : 6",
-          "as": "facet_State_sort_index"
-        },
-        {
-          "type": "filter",
-          "expr": "isValid(datum[\"Solar\"]) && isFinite(+datum[\"Solar\"]) && isValid(datum[\"HP_Num\"]) && isFinite(+datum[\"HP_Num\"]) && isValid(datum[\"Battery_Num\"]) && isFinite(+datum[\"Battery_Num\"])"
-        }
-      ]
-    },
-    {
-      "name": "facet_domain",
-      "source": "source_0",
-      "transform": [
-        {
-          "type": "aggregate",
-          "groupby": ["State"],
-          "fields": ["facet_State_sort_index"],
-          "ops": ["max"],
-          "as": ["facet_State_sort_index"]
-        }
-      ]
-    },
-    {
-      "name": "facet_domain_row",
-      "transform": [
-        {
-          "type": "sequence",
-          "start": 0,
-          "stop": {"signal": "ceil(length(data(\"facet_domain\")) / 3)"}
-        }
-      ]
-    },
-    {
-      "name": "facet_domain_column",
-      "transform": [
-        {
-          "type": "sequence",
-          "start": 0,
-          "stop": {"signal": "min(length(data(\"facet_domain\")), 3)"}
-        }
-      ]
-    }
-  ],
-  "signals": [
-    {"name": "child_width", "value": 180},
-    {"name": "child_height", "value": 180}
-  ],
-  "layout": {"padding": 20, "bounds": "full", "align": "all", "columns": 3},
-  "marks": [
-    {
-      "name": "row_header",
-      "type": "group",
-      "role": "row-header",
-      "from": {"data": "facet_domain_row"},
-      "encode": {"update": {"height": {"signal": "child_height"}}},
-      "axes": [
-        {
-          "scale": "y",
-          "orient": "left",
-          "grid": false,
-          "title": "Heat Pumps (Log Scale)",
-          "labelOverlap": "greedy",
-          "zindex": 0
-        }
-      ]
-    },
-    {
-      "name": "column_footer",
-      "type": "group",
-      "role": "column-footer",
-      "from": {"data": "facet_domain_column"},
-      "encode": {"update": {"width": {"signal": "child_width"}}},
-      "axes": [
-        {
-          "scale": "x",
-          "orient": "bottom",
-          "grid": false,
-          "title": "Solar Systems (Log Scale)",
-          "labelFlush": true,
-          "labelOverlap": "greedy",
-          "zindex": 0
-        }
-      ]
-    },
-    {
-      "name": "cell",
-      "type": "group",
-      "title": {
-        "text": {
-          "signal": "isValid(parent[\"State\"]) ? parent[\"State\"] : \"\"+parent[\"State\"]"
-        },
-        "style": "guide-label",
-        "frame": "group",
-        "offset": 10
-      },
-      "style": "cell",
+      "lookup": "PC",
       "from": {
-        "facet": {
-          "name": "facet",
-          "data": "source_0",
-          "groupby": ["State"],
-          "aggregate": {
-            "fields": ["facet_State_sort_index"],
-            "ops": ["max"],
-            "as": ["facet_State_sort_index"]
-          }
-        }
-      },
-      "sort": {
-        "field": ["datum[\"facet_State_sort_index\"]"],
-        "order": ["ascending"]
-      },
-      "encode": {
-        "update": {
-          "width": {"signal": "child_width"},
-          "height": {"signal": "child_height"}
-        }
-      },
-      "marks": [
-        {
-          "name": "child_marks",
-          "type": "symbol",
-          "style": ["circle"],
-          "from": {"data": "facet"},
-          "encode": {
-            "update": {
-              "opacity": {"value": 0.6},
-              "stroke": {"value": "black"},
-              "strokeWidth": {"value": 0.5},
-              "fill": {"scale": "color", "field": "State"},
-              "tooltip": {
-                "signal": "{\"Postcode\": isValid(datum[\"PC\"]) ? isArray(datum[\"PC\"]) ? join(datum[\"PC\"], '\\n') : datum[\"PC\"] : \"\"+datum[\"PC\"], \"Solar\": format(datum[\"Solar\"], \",\"), \"Heat Pumps\": format(datum[\"HP_Num\"], \",\"), \"Batteries\": format(datum[\"Battery_Num\"], \",\")}"
-              },
-              "ariaRoleDescription": {"value": "circle"},
-              "description": {
-                "signal": "\"Solar Systems (Log Scale): \" + (format(datum[\"Solar\"], \"\")) + \"; Heat Pumps (Log Scale): \" + (format(datum[\"HP_Num\"], \"\")) + \"; State: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"]) + \"; Batteries Installed: \" + (format(datum[\"Battery_Num\"], \"\")) + \"; Postcode: \" + (isValid(datum[\"PC\"]) ? isArray(datum[\"PC\"]) ? join(datum[\"PC\"], ' ') : datum[\"PC\"] : \"\"+datum[\"PC\"]) + \"; Solar: \" + (format(datum[\"Solar\"], \",\")) + \"; Heat Pumps: \" + (format(datum[\"HP_Num\"], \",\")) + \"; Batteries: \" + (format(datum[\"Battery_Num\"], \",\"))"
-              },
-              "x": {"scale": "x", "field": "Solar"},
-              "y": {"scale": "y", "field": "HP_Num"},
-              "size": {"scale": "size", "field": "Battery_Num"},
-              "shape": {"value": "circle"}
-            }
-          }
-        }
-      ],
-      "axes": [
-        {
-          "scale": "x",
-          "orient": "bottom",
-          "gridScale": "y",
-          "grid": true,
-          "domain": false,
-          "labels": false,
-          "aria": false,
-          "maxExtent": 0,
-          "minExtent": 0,
-          "ticks": false,
-          "zindex": 0
+        "data": {
+          "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-battery-installations.csv",
+          "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
         },
-        {
-          "scale": "y",
-          "orient": "left",
-          "gridScale": "x",
-          "grid": true,
-          "domain": false,
-          "labels": false,
-          "aria": false,
-          "maxExtent": 0,
-          "minExtent": 0,
-          "ticks": false,
-          "zindex": 0
-        }
+        "key": "Postcode",
+        "fields": ["Total"]
+      },
+      "as": ["Battery"]
+    },
+    {
+      "lookup": "PC",
+      "from": {
+        "data": {
+          "url": "https://ntlan94.github.io/FIT2079_DV2/data/swh-air-source-heat-pump-installations.csv",
+          "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
+        },
+        "key": "Postcode",
+        "fields": ["Total"]
+      },
+      "as": ["HP"]
+    },
+    {"calculate": "isValid(datum.Battery) ? datum.Battery : 0", "as": "Battery_Num"},
+    {"calculate": "isValid(datum.HP) ? datum.HP : 0", "as": "HP_Num"},
+    {"calculate": "length(datum.PC) == 3 ? '0' + datum.PC : datum.PC", "as": "PC_pad"},
+    {"calculate": "datum.PC_pad[0] == '2' ? 'NSW' : datum.PC_pad[0] == '3' ? 'VIC' : datum.PC_pad[0] == '4' ? 'QLD' : datum.PC_pad[0] == '5' ? 'SA' : datum.PC_pad[0] == '6' ? 'WA' : datum.PC_pad[0] == '7' ? 'TAS' : 'Other'", "as": "State"},
+    {"filter": "datum.State != 'Other' && datum.Solar > 0 && datum.HP_Num > 0"}
+  ],
+  "columns": 3,
+  "facet": {
+    "field": "State",
+    "type": "nominal",
+    "title": null,
+    "sort": ["NSW", "VIC", "QLD", "WA", "SA", "TAS"]
+  },
+  "spec": {
+    "width": 180,
+    "height": 180,
+    "mark": {"type": "circle", "opacity": 0.6, "stroke": "black", "strokeWidth": 0.5},
+    "encoding": {
+      "x": {
+        "field": "Solar",
+        "type": "quantitative",
+        "title": "Solar Systems (Log Scale)",
+        "scale": {"type": "log", "domain": [1, 5000]}
+      },
+      "y": {
+        "field": "HP_Num",
+        "type": "quantitative",
+        "title": "Heat Pumps (Log Scale)",
+        "scale": {"type": "log", "domain": [1, 5000]}
+      },
+      "size": {
+        "field": "Battery_Num",
+        "type": "quantitative",
+        "title": "Batteries Installed",
+        "scale": {"range": [10, 400]}
+      },
+      "color": {
+        "field": "State",
+        "type": "nominal",
+        "scale": {"scheme": "category10"},
+        "legend": null
+      },
+      "tooltip": [
+        {"field": "PC", "type": "nominal", "title": "Postcode"},
+        {"field": "Solar", "type": "quantitative", "format": ","},
+        {"field": "HP_Num", "type": "quantitative", "title": "Heat Pumps", "format": ","},
+        {"field": "Battery_Num", "type": "quantitative", "title": "Batteries", "format": ","}
       ]
     }
-  ],
-  "scales": [
-    {
-      "name": "x",
-      "type": "log",
-      "domain": [1, 5000],
-      "range": [0, {"signal": "child_width"}]
-    },
-    {
-      "name": "y",
-      "type": "log",
-      "domain": [1, 5000],
-      "range": [{"signal": "child_height"}, 0]
-    },
-    {
-      "name": "color",
-      "type": "ordinal",
-      "domain": {"data": "source_0", "field": "State", "sort": true},
-      "range": {"scheme": "category10"}
-    },
-    {
-      "name": "size",
-      "type": "linear",
-      "domain": {"data": "source_0", "field": "Battery_Num"},
-      "range": [10, 400],
-      "zero": true
-    }
-  ],
-  "legends": [
-    {
-      "title": "Batteries Installed",
-      "size": "size",
-      "symbolType": "circle",
-      "encode": {
-        "symbols": {
-          "update": {
-            "fill": {"value": "black"},
-            "stroke": {"value": "black"},
-            "fillOpacity": {"value": 0.6},
-            "opacity": {"value": 0.6}
-          }
-        }
-      }
-    }
-  ],
+  },
   "config": {
-    "style": {
-      "guide-label": {"font": "sans-serif"},
-      "guide-title": {"font": "sans-serif"},
-      "group-title": {"font": "sans-serif"},
-      "group-subtitle": {"font": "sans-serif"},
-      "cell": {"stroke": "transparent"},
-      "text": {"font": "sans-serif"}
-    }
+    "view": {"stroke": "transparent"},
+    "font": "sans-serif"
   }
 }
