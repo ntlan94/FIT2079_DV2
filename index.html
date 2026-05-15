@@ -78,6 +78,12 @@
       <strong>Insight:</strong> While solar dominates the national landscape, micro-hydro systems find a strong niche in Tasmania (TAS) due to its unique topography and water resources. Conversely, coastal states lead in micro-wind adoption.
     </p>
   </div>
+  <div class="container">
+    <div id="vis6" class="vis-container"></div>
+    <p style="font-size: 13px; color: #666; margin-top: 15px; font-style: italic; max-width: 800px;">
+      <strong>Insight:</strong> The Diverging Bar Chart highlights the electrification scale. While states like NSW and QLD dominate solar PV (left), NSW is also aggressively leading the transition to energy-efficient air source heat pumps (right).
+    </p>
+  </div>
 
 <script type="text/javascript">
     var spec1 = "json/Australian_Residential_Solar_PV_Adoption_Map.vg.json";
@@ -94,6 +100,9 @@
     
     var spec5 = "json/wind_hydro_donut.vg.json";
     vegaEmbed('#vis5', spec5).catch(console.error);
+
+    var spec6 = "json/tornado_solar_vs_heatpump.vg.json";
+    vegaEmbed('#vis6', spec6).catch(console.error);
   </script>
 
 </body>
