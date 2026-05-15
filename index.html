@@ -84,6 +84,12 @@
       <strong>Insight:</strong> The Diverging Bar Chart highlights the electrification scale. While states like NSW and QLD dominate solar PV (left), NSW is also aggressively leading the transition to energy-efficient air source heat pumps (right).
     </p>
   </div>
+  <div class="container">
+    <div id="vis7" class="vis-container"></div>
+    <p style="font-size: 13px; color: #666; margin-top: 15px; font-style: italic; max-width: 800px;">
+      <strong>Insight:</strong> By combining installation counts with total capacity data, this Dual-Axis chart reveals whether high-volume areas are simply installing more systems, or adopting larger, more powerful arrays. A spike in the line graph indicates a region investing in heavier commercial/residential capacity.
+    </p>
+  </div>
 
 <script type="text/javascript">
     var spec1 = "json/Australian_Residential_Solar_PV_Adoption_Map.vg.json";
@@ -103,6 +109,9 @@
 
     var spec6 = "json/tornado_solar_vs_heatpump.vg.json";
     vegaEmbed('#vis6', spec6).catch(console.error);
+    
+    var spec7 = "json/dual_axis_capacity.vg.json";
+    vegaEmbed('#vis7', spec7).catch(console.error);
   </script>
 
 </body>
