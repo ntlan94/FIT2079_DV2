@@ -1,0 +1,308 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "background": "white",
+  "padding": 5,
+  "width": 700,
+  "height": 400,
+  "title": {
+    "text": "Quantity vs. Quality: Solar Installations and Average System Size",
+    "subtitle": "Top 15 Postcodes by Installation Volume vs. Average Capacity (kW) per System",
+    "fontSize": 18,
+    "anchor": "start",
+    "color": "#2c3e50"
+  },
+  "style": "cell",
+  "data": [
+    {
+      "name": "source_1",
+      "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-solar-capacity.csv",
+      "format": {"type": "csv", "delimiter": ","}
+    },
+    {
+      "name": "source_0",
+      "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-solar-installations.csv",
+      "format": {"type": "csv", "delimiter": ","},
+      "transform": [
+        {"type": "formula", "expr": "toString(datum.Postcode)", "as": "PC"},
+        {
+          "type": "formula",
+          "expr": "toNumber(replace(datum.Total, /,/g, ''))",
+          "as": "Total_Clean"
+        },
+        {
+          "type": "lookup",
+          "from": "source_1",
+          "key": "Postcode",
+          "fields": ["PC"],
+          "values": ["Total"],
+          "as": ["Raw_Capacity"]
+        },
+        {
+          "type": "formula",
+          "expr": "toNumber(replace(datum.Raw_Capacity, /,/g, ''))",
+          "as": "Total_Capacity"
+        },
+        {
+          "type": "filter",
+          "expr": "datum.Total_Clean != null && datum.Total_Clean > 0 && datum.Total_Capacity != null"
+        },
+        {
+          "type": "formula",
+          "expr": "datum.Total_Capacity / datum.Total_Clean",
+          "as": "Avg_Capacity_kW"
+        },
+        {
+          "type": "window",
+          "params": [null],
+          "as": ["rank"],
+          "ops": ["rank"],
+          "fields": [null],
+          "sort": {"field": ["Total_Clean"], "order": ["descending"]}
+        },
+        {"type": "filter", "expr": "datum.rank <= 15"}
+      ]
+    },
+    {
+      "name": "data_1",
+      "source": "source_0",
+      "transform": [
+        {
+          "type": "stack",
+          "groupby": ["PC"],
+          "field": "Total_Clean",
+          "sort": {"field": [], "order": []},
+          "as": ["Total_Clean_start", "Total_Clean_end"],
+          "offset": "zero"
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"Total_Clean\"]) && isFinite(+datum[\"Total_Clean\"])"
+        }
+      ]
+    },
+    {
+      "name": "data_2",
+      "source": "source_0",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"Avg_Capacity_kW\"]) && isFinite(+datum[\"Avg_Capacity_kW\"])"
+        }
+      ]
+    }
+  ],
+  "marks": [
+    {
+      "type": "group",
+      "from": {
+        "facet": {
+          "data": "data_1",
+          "name": "stack_group_layer_0_main",
+          "groupby": ["PC"],
+          "aggregate": {
+            "fields": [
+              "Total_Clean_start",
+              "Total_Clean_start",
+              "Total_Clean_end",
+              "Total_Clean_end"
+            ],
+            "ops": ["min", "max", "min", "max"]
+          }
+        }
+      },
+      "encode": {
+        "update": {
+          "x": {"scale": "x", "field": "PC"},
+          "width": {"signal": "max(0.25, bandwidth('x'))"},
+          "y": {
+            "signal": "min(scale('layer_0_y',datum[\"min_Total_Clean_start\"]),scale('layer_0_y',datum[\"max_Total_Clean_start\"]),scale('layer_0_y',datum[\"min_Total_Clean_end\"]),scale('layer_0_y',datum[\"max_Total_Clean_end\"]))"
+          },
+          "y2": {
+            "signal": "max(scale('layer_0_y',datum[\"min_Total_Clean_start\"]),scale('layer_0_y',datum[\"max_Total_Clean_start\"]),scale('layer_0_y',datum[\"min_Total_Clean_end\"]),scale('layer_0_y',datum[\"max_Total_Clean_end\"]))"
+          },
+          "clip": {"value": true},
+          "cornerRadiusTopLeft": {"value": 4},
+          "cornerRadiusTopRight": {"value": 4}
+        }
+      },
+      "marks": [
+        {
+          "type": "group",
+          "encode": {
+            "update": {
+              "y": {"field": {"group": "y"}, "mult": -1},
+              "width": {"field": {"group": "width"}}
+            }
+          },
+          "marks": [
+            {
+              "name": "layer_0_marks",
+              "type": "rect",
+              "style": ["bar"],
+              "from": {"data": "stack_group_layer_0_main"},
+              "encode": {
+                "update": {
+                  "opacity": {"value": 0.8},
+                  "fill": {"value": "#f39c12"},
+                  "tooltip": {
+                    "signal": "{\"Postcode\": isValid(datum[\"PC\"]) ? isArray(datum[\"PC\"]) ? join(datum[\"PC\"], '\\n') : datum[\"PC\"] : \"\"+datum[\"PC\"], \"Total Systems\": format(datum[\"Total_Clean\"], \",\"), \"Total Capacity (kW)\": format(datum[\"Total_Capacity\"], \",.0f\")}"
+                  },
+                  "ariaRoleDescription": {"value": "bar"},
+                  "description": {
+                    "signal": "\"Postcode: \" + (isValid(datum[\"PC\"]) ? isArray(datum[\"PC\"]) ? join(datum[\"PC\"], ' ') : datum[\"PC\"] : \"\"+datum[\"PC\"]) + \"; Total Installations (Bars): \" + (format(datum[\"Total_Clean\"], \"\")) + \"; Total Systems: \" + (format(datum[\"Total_Clean\"], \",\")) + \"; Total Capacity (kW): \" + (format(datum[\"Total_Capacity\"], \",.0f\"))"
+                  },
+                  "width": {"field": {"group": "width"}},
+                  "y": {"scale": "layer_0_y", "field": "Total_Clean_end"},
+                  "y2": {"scale": "layer_0_y", "field": "Total_Clean_start"}
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "layer_1_layer_0_marks",
+      "type": "line",
+      "style": ["line"],
+      "sort": {"field": "x"},
+      "from": {"data": "source_0"},
+      "encode": {
+        "update": {
+          "strokeWidth": {"value": 3},
+          "stroke": {"value": "#2c3e50"},
+          "tooltip": {
+            "signal": "{\"Postcode\": isValid(datum[\"PC\"]) ? isArray(datum[\"PC\"]) ? join(datum[\"PC\"], '\\n') : datum[\"PC\"] : \"\"+datum[\"PC\"], \"Avg System Size (kW)\": format(datum[\"Avg_Capacity_kW\"], \".2f\")}"
+          },
+          "description": {
+            "signal": "\"PC: \" + (isValid(datum[\"PC\"]) ? isArray(datum[\"PC\"]) ? join(datum[\"PC\"], ' ') : datum[\"PC\"] : \"\"+datum[\"PC\"]) + \"; Average System Capacity (kW) (Line): \" + (format(datum[\"Avg_Capacity_kW\"], \"\")) + \"; Postcode: \" + (isValid(datum[\"PC\"]) ? isArray(datum[\"PC\"]) ? join(datum[\"PC\"], ' ') : datum[\"PC\"] : \"\"+datum[\"PC\"]) + \"; Avg System Size (kW): \" + (format(datum[\"Avg_Capacity_kW\"], \".2f\"))"
+          },
+          "x": {"scale": "x", "field": "PC", "band": 0.5},
+          "y": {"scale": "layer_1_y", "field": "Avg_Capacity_kW"},
+          "defined": {
+            "signal": "isValid(datum[\"Avg_Capacity_kW\"]) && isFinite(+datum[\"Avg_Capacity_kW\"])"
+          }
+        }
+      }
+    },
+    {
+      "name": "layer_1_layer_1_marks",
+      "type": "symbol",
+      "style": ["point"],
+      "from": {"data": "data_2"},
+      "encode": {
+        "update": {
+          "opacity": {"value": 1},
+          "fill": {"value": "#2c3e50"},
+          "size": {"value": 80},
+          "tooltip": {
+            "signal": "{\"Postcode\": isValid(datum[\"PC\"]) ? isArray(datum[\"PC\"]) ? join(datum[\"PC\"], '\\n') : datum[\"PC\"] : \"\"+datum[\"PC\"], \"Avg System Size (kW)\": format(datum[\"Avg_Capacity_kW\"], \".2f\")}"
+          },
+          "ariaRoleDescription": {"value": "point"},
+          "description": {
+            "signal": "\"PC: \" + (isValid(datum[\"PC\"]) ? isArray(datum[\"PC\"]) ? join(datum[\"PC\"], ' ') : datum[\"PC\"] : \"\"+datum[\"PC\"]) + \"; Average System Capacity (kW) (Line): \" + (format(datum[\"Avg_Capacity_kW\"], \"\")) + \"; Postcode: \" + (isValid(datum[\"PC\"]) ? isArray(datum[\"PC\"]) ? join(datum[\"PC\"], ' ') : datum[\"PC\"] : \"\"+datum[\"PC\"]) + \"; Avg System Size (kW): \" + (format(datum[\"Avg_Capacity_kW\"], \".2f\"))"
+          },
+          "x": {"scale": "x", "field": "PC", "band": 0.5},
+          "y": {"scale": "layer_1_y", "field": "Avg_Capacity_kW"}
+        }
+      }
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "band",
+      "domain": {
+        "data": "source_0",
+        "field": "PC",
+        "sort": {"op": "sum", "field": "Total_Clean", "order": "descending"}
+      },
+      "range": [0, {"signal": "width"}],
+      "paddingInner": 0.1,
+      "paddingOuter": 0.05
+    },
+    {
+      "name": "layer_0_y",
+      "type": "linear",
+      "domain": {
+        "data": "data_1",
+        "fields": ["Total_Clean_start", "Total_Clean_end"]
+      },
+      "range": [{"signal": "height"}, 0],
+      "nice": true,
+      "zero": true
+    },
+    {
+      "name": "layer_1_y",
+      "type": "linear",
+      "domain": {
+        "fields": [
+          {"data": "source_0", "field": "Avg_Capacity_kW"},
+          {"data": "data_2", "field": "Avg_Capacity_kW"}
+        ]
+      },
+      "range": [{"signal": "height"}, 0],
+      "zero": false,
+      "padding": 20,
+      "nice": true
+    }
+  ],
+  "axes": [
+    {
+      "scale": "layer_0_y",
+      "orient": "left",
+      "gridScale": "x",
+      "grid": true,
+      "tickCount": {"signal": "ceil(height/40)"},
+      "domain": false,
+      "labels": false,
+      "aria": false,
+      "maxExtent": 0,
+      "minExtent": 0,
+      "ticks": false,
+      "zindex": 0
+    },
+    {
+      "scale": "x",
+      "orient": "bottom",
+      "grid": false,
+      "title": "Postcode",
+      "labelAngle": 315,
+      "labelAlign": "right",
+      "labelBaseline": "top",
+      "zindex": 0
+    },
+    {
+      "scale": "layer_0_y",
+      "orient": "left",
+      "grid": false,
+      "title": "Total Installations (Bars)",
+      "labelColor": "#d35400",
+      "titleColor": "#d35400",
+      "labelOverlap": true,
+      "tickCount": {"signal": "ceil(height/40)"},
+      "zindex": 0
+    },
+    {
+      "scale": "layer_1_y",
+      "orient": "right",
+      "grid": false,
+      "title": "Average System Capacity (kW) (Line)",
+      "labelColor": "#2c3e50",
+      "titleColor": "#2c3e50",
+      "labelOverlap": true,
+      "tickCount": {"signal": "ceil(height/40)"},
+      "zindex": 0
+    }
+  ],
+  "config": {
+    "style": {
+      "guide-label": {"font": "sans-serif"},
+      "guide-title": {"font": "sans-serif"},
+      "group-title": {"font": "sans-serif"},
+      "group-subtitle": {"font": "sans-serif"},
+      "cell": {"stroke": "transparent"},
+      "text": {"font": "sans-serif"}
+    }
+  }
+}
