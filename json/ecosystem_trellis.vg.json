@@ -4,7 +4,7 @@
   "padding": 5,
   "title": {
     "text": "The Renewable Ecosystem by State",
-    "subtitle": "Trellis Scatter Plot: Solar (X) vs. Heat Pump (Y) vs. Battery (Size) across top 5 states",
+    "subtitle": "Trellis Scatter Plot: Solar (X) vs. Heat Pump (Y) vs. Battery (Size)",
     "fontSize": 18,
     "anchor": "start",
     "color": "#2c3e50"
@@ -68,7 +68,7 @@
         },
         {
           "type": "formula",
-          "expr": "datum.PC_pad[0] == '2' ? 'NSW' : datum.PC_pad[0] == '3' ? 'VIC' : datum.PC_pad[0] == '4' ? 'QLD' : datum.PC_pad[0] == '5' ? 'SA' : datum.PC_pad[0] == '6' ? 'WA' : 'Other'",
+          "expr": "datum.PC_pad[0] == '2' ? 'NSW' : datum.PC_pad[0] == '3' ? 'VIC' : datum.PC_pad[0] == '4' ? 'QLD' : datum.PC_pad[0] == '5' ? 'SA' : datum.PC_pad[0] == '6' ? 'WA' : datum.PC_pad[0] == '7' ? 'TAS' : 'Other'",
           "as": "State"
         },
         {
@@ -77,7 +77,7 @@
         },
         {
           "type": "formula",
-          "expr": "datum[\"State\"]===\"NSW\" ? 0 : datum[\"State\"]===\"VIC\" ? 1 : datum[\"State\"]===\"QLD\" ? 2 : datum[\"State\"]===\"WA\" ? 3 : datum[\"State\"]===\"SA\" ? 4 : 5",
+          "expr": "datum[\"State\"]===\"NSW\" ? 0 : datum[\"State\"]===\"VIC\" ? 1 : datum[\"State\"]===\"QLD\" ? 2 : datum[\"State\"]===\"WA\" ? 3 : datum[\"State\"]===\"SA\" ? 4 : datum[\"State\"]===\"TAS\" ? 5 : 6",
           "as": "facet_State_sort_index"
         },
         {
@@ -101,7 +101,13 @@
     },
     {
       "name": "facet_domain_row",
-      "transform": [{"type": "sequence", "start": 0, "stop": 1}]
+      "transform": [
+        {
+          "type": "sequence",
+          "start": 0,
+          "stop": {"signal": "ceil(length(data(\"facet_domain\")) / 3)"}
+        }
+      ]
     },
     {
       "name": "facet_domain_column",
@@ -109,16 +115,16 @@
         {
           "type": "sequence",
           "start": 0,
-          "stop": {"signal": "length(data(\"facet_domain\"))"}
+          "stop": {"signal": "min(length(data(\"facet_domain\")), 3)"}
         }
       ]
     }
   ],
   "signals": [
-    {"name": "child_width", "value": 220},
-    {"name": "child_height", "value": 220}
+    {"name": "child_width", "value": 180},
+    {"name": "child_height", "value": 180}
   ],
-  "layout": {"padding": 20, "bounds": "full", "align": "all"},
+  "layout": {"padding": 20, "bounds": "full", "align": "all", "columns": 3},
   "marks": [
     {
       "name": "row_header",
@@ -250,16 +256,14 @@
     {
       "name": "x",
       "type": "log",
-      "domain": {"data": "source_0", "field": "Solar"},
-      "range": [0, {"signal": "child_width"}],
-      "nice": true
+      "domain": [1, 5000],
+      "range": [0, {"signal": "child_width"}]
     },
     {
       "name": "y",
       "type": "log",
-      "domain": {"data": "source_0", "field": "HP_Num"},
-      "range": [{"signal": "child_height"}, 0],
-      "nice": true
+      "domain": [1, 5000],
+      "range": [{"signal": "child_height"}, 0]
     },
     {
       "name": "color",
@@ -271,7 +275,7 @@
       "name": "size",
       "type": "linear",
       "domain": {"data": "source_0", "field": "Battery_Num"},
-      "range": [10, 500],
+      "range": [10, 400],
       "zero": true
     }
   ],
