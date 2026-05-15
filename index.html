@@ -90,6 +90,12 @@
       <strong>Insight:</strong> By combining installation counts with total capacity data, this Dual-Axis chart reveals whether high-volume areas are simply installing more systems, or adopting larger, more powerful arrays. A spike in the line graph indicates a region investing in heavier commercial/residential capacity.
     </p>
   </div>
+  <div class="container">
+    <div id="vis8" class="vis-container"></div>
+    <p style="font-size: 13px; color: #666; margin-top: 15px; font-style: italic; max-width: 800px;">
+      <strong>Insight:</strong> This normalized area chart highlights the evolution of the residential battery market. Notice the early dominance of South Australia (SA) around 2016-2018, which has gradually given way to New South Wales (NSW) and Victoria (VIC) as national adoption broadened.
+    </p>
+  </div>
 
 <script type="text/javascript">
     var spec1 = "json/Australian_Residential_Solar_PV_Adoption_Map.vg.json";
@@ -105,13 +111,15 @@
     vegaEmbed('#vis4', spec4).then(function(result){}).catch(console.error);
     
     var spec5 = "json/wind_hydro_donut.vg.json";
-    vegaEmbed('#vis5', spec5).catch(console.error);
+    vegaEmbed('#vis5', spec5).then(function(result){}).catch(console.error);
 
     var spec6 = "json/tornado_solar_vs_heatpump.vg.json";
-    vegaEmbed('#vis6', spec6).catch(console.error);
+    vegaEmbed('#vis6', spec6).then(function(result){}).catch(console.error);
     
     var spec7 = "json/dual_axis_capacity.vg.json";
-    vegaEmbed('#vis7', spec7).catch(console.error);
+    vegaEmbed('#vis7', spec7).then(function(result){}).catch(console.error);
+  var spec8 = "json/battery_market_share.vg.json";
+    vegaEmbed('#vis8', spec8).then(function(result){}).catch(console.error);
   </script>
 
 </body>
