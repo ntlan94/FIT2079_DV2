@@ -1,0 +1,378 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "background": "white",
+  "padding": 5,
+  "width": 800,
+  "height": 500,
+  "title": {
+    "text": "Socio-Economic Status vs. Solar Adoption",
+    "subtitle": [
+      "Correlation between SEIFA Advantage Score and Solar Installations per 1,000 residents",
+      "Note: Higher SEIFA scores indicate areas with greater socio-economic advantage (income/education)."
+    ],
+    "fontSize": 18,
+    "anchor": "start",
+    "color": "#2c3e50"
+  },
+  "style": "cell",
+  "data": [
+    {"name": "Decile_Selection_store"},
+    {
+      "name": "source_1",
+      "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-solar-installations.csv",
+      "format": {"type": "csv", "delimiter": ","}
+    },
+    {
+      "name": "source_0",
+      "url": "https://ntlan94.github.io/FIT2079_DV2/data/SEIFA_economic.csv",
+      "format": {"type": "csv", "delimiter": ","},
+      "transform": [
+        {
+          "type": "formula",
+          "expr": "toString(datum['2021 Postal Area (POA) Code'])",
+          "as": "Postcode"
+        },
+        {
+          "type": "formula",
+          "expr": "toNumber(datum['Usual Resident Population'])",
+          "as": "Population"
+        },
+        {
+          "type": "formula",
+          "expr": "toNumber(datum['Score'])",
+          "as": "SEIFA_Score"
+        },
+        {
+          "type": "filter",
+          "expr": "datum.Population > 1000 && datum.SEIFA_Score > 0"
+        },
+        {
+          "type": "lookup",
+          "from": "source_1",
+          "key": "Postcode",
+          "fields": ["Postcode"],
+          "values": ["Total"]
+        },
+        {"type": "filter", "expr": "datum.Total != null && datum.Total > 0"},
+        {
+          "type": "formula",
+          "expr": "(datum.Total / datum.Population) * 1000",
+          "as": "Installs_Per_1000"
+        }
+      ]
+    },
+    {
+      "name": "data_0",
+      "source": "source_0",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"SEIFA_Score\"]) && isFinite(+datum[\"SEIFA_Score\"]) && isValid(datum[\"Installs_Per_1000\"]) && isFinite(+datum[\"Installs_Per_1000\"]) && isValid(datum[\"Total\"]) && isFinite(+datum[\"Total\"])"
+        }
+      ]
+    },
+    {
+      "name": "data_1",
+      "source": "source_0",
+      "transform": [
+        {
+          "type": "regression",
+          "x": "SEIFA_Score",
+          "y": "Installs_Per_1000",
+          "as": ["SEIFA_Score", "Installs_Per_1000"]
+        }
+      ]
+    }
+  ],
+  "signals": [
+    {
+      "name": "unit",
+      "value": {},
+      "on": [
+        {"events": "pointermove", "update": "isTuple(group()) ? group() : unit"}
+      ]
+    },
+    {
+      "name": "Decile_Selection_Decile_legend",
+      "value": null,
+      "on": [
+        {
+          "events": [
+            {
+              "source": "view",
+              "type": "click",
+              "markname": "Decile_legend_symbols"
+            },
+            {
+              "source": "view",
+              "type": "click",
+              "markname": "Decile_legend_labels"
+            },
+            {
+              "source": "view",
+              "type": "click",
+              "markname": "Decile_legend_entries"
+            }
+          ],
+          "update": "isDefined(datum.value) ? datum.value : item().items[0].items[0].datum.value",
+          "force": true
+        },
+        {
+          "events": [{"source": "view", "type": "click"}],
+          "update": "!event.item || !datum ? null : Decile_Selection_Decile_legend",
+          "force": true
+        }
+      ]
+    },
+    {
+      "name": "Decile_Selection",
+      "update": "vlSelectionResolve(\"Decile_Selection_store\", \"union\", true, true)"
+    },
+    {
+      "name": "Decile_Selection_tuple",
+      "update": "Decile_Selection_Decile_legend !== null ? {fields: Decile_Selection_tuple_fields, values: [Decile_Selection_Decile_legend]} : null"
+    },
+    {
+      "name": "Decile_Selection_tuple_fields",
+      "value": [{"type": "E", "field": "Decile"}]
+    },
+    {
+      "name": "Decile_Selection_toggle",
+      "value": false,
+      "on": [
+        {
+          "events": {"merge": [{"source": "view", "type": "click"}]},
+          "update": "event.shiftKey"
+        }
+      ]
+    },
+    {
+      "name": "Decile_Selection_modify",
+      "on": [
+        {
+          "events": {"signal": "Decile_Selection_tuple"},
+          "update": "modify(\"Decile_Selection_store\", Decile_Selection_toggle ? null : Decile_Selection_tuple, Decile_Selection_toggle ? null : true, Decile_Selection_toggle ? Decile_Selection_tuple : null)"
+        }
+      ]
+    }
+  ],
+  "marks": [
+    {
+      "name": "layer_0_marks",
+      "type": "symbol",
+      "style": ["circle"],
+      "interactive": true,
+      "from": {"data": "data_0"},
+      "encode": {
+        "update": {
+          "opacity": [
+            {
+              "test": "!length(data(\"Decile_Selection_store\")) || vlSelectionTest(\"Decile_Selection_store\", datum)",
+              "value": 0.7
+            },
+            {"value": 0.05}
+          ],
+          "stroke": {"value": "#2c3e50"},
+          "strokeWidth": {"value": 0.5},
+          "fill": {"scale": "color", "field": "Decile"},
+          "tooltip": {
+            "signal": "{\"Postcode\": isValid(datum[\"Postcode\"]) ? isArray(datum[\"Postcode\"]) ? join(datum[\"Postcode\"], '\\n') : datum[\"Postcode\"] : \"\"+datum[\"Postcode\"], \"Population\": format(datum[\"Population\"], \",\"), \"SEIFA_Score\": format(datum[\"SEIFA_Score\"], \"\"), \"Total\": format(datum[\"Total\"], \",\"), \"Installs_Per_1000\": format(datum[\"Installs_Per_1000\"], \".1f\")}"
+          },
+          "ariaRoleDescription": {"value": "circle"},
+          "description": {
+            "signal": "\"SEIFA Advantage Score: \" + (format(datum[\"SEIFA_Score\"], \"\")) + \"; Solar Installations per 1,000 Residents: \" + (format(datum[\"Installs_Per_1000\"], \"\")) + \"; SEIFA Decile: \" + (isValid(datum[\"Decile\"]) ? isArray(datum[\"Decile\"]) ? join(datum[\"Decile\"], ' ') : datum[\"Decile\"] : \"\"+datum[\"Decile\"]) + \"; Total Installations: \" + (format(datum[\"Total\"], \"\")) + \"; Postcode: \" + (isValid(datum[\"Postcode\"]) ? isArray(datum[\"Postcode\"]) ? join(datum[\"Postcode\"], ' ') : datum[\"Postcode\"] : \"\"+datum[\"Postcode\"]) + \"; Population: \" + (format(datum[\"Population\"], \",\")) + \"; SEIFA_Score: \" + (format(datum[\"SEIFA_Score\"], \"\")) + \"; Total: \" + (format(datum[\"Total\"], \",\")) + \"; Installs_Per_1000: \" + (format(datum[\"Installs_Per_1000\"], \".1f\"))"
+          },
+          "x": {"scale": "x", "field": "SEIFA_Score"},
+          "y": {"scale": "y", "field": "Installs_Per_1000"},
+          "size": {"scale": "size", "field": "Total"},
+          "shape": {"value": "circle"}
+        }
+      }
+    },
+    {
+      "name": "layer_1_marks",
+      "type": "line",
+      "style": ["line"],
+      "sort": {"field": "x"},
+      "interactive": false,
+      "from": {"data": "data_1"},
+      "encode": {
+        "update": {
+          "strokeDash": {"value": [5, 5]},
+          "stroke": {"value": "#e74c3c"},
+          "description": {
+            "signal": "\"SEIFA_Score: \" + (format(datum[\"SEIFA_Score\"], \"\")) + \"; Installs_Per_1000: \" + (format(datum[\"Installs_Per_1000\"], \"\"))"
+          },
+          "x": {"scale": "x", "field": "SEIFA_Score"},
+          "y": {"scale": "y", "field": "Installs_Per_1000"},
+          "strokeWidth": {"value": 2},
+          "defined": {
+            "signal": "isValid(datum[\"SEIFA_Score\"]) && isFinite(+datum[\"SEIFA_Score\"]) && isValid(datum[\"Installs_Per_1000\"]) && isFinite(+datum[\"Installs_Per_1000\"])"
+          }
+        }
+      }
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "linear",
+      "domain": {
+        "fields": [
+          {"data": "data_0", "field": "SEIFA_Score"},
+          {"data": "data_1", "field": "SEIFA_Score"}
+        ]
+      },
+      "range": [0, {"signal": "width"}],
+      "zero": false,
+      "nice": true
+    },
+    {
+      "name": "y",
+      "type": "linear",
+      "domain": {
+        "fields": [
+          {"data": "data_0", "field": "Installs_Per_1000"},
+          {"data": "data_1", "field": "Installs_Per_1000"}
+        ]
+      },
+      "range": [{"signal": "height"}, 0],
+      "zero": false,
+      "nice": true
+    },
+    {
+      "name": "color",
+      "type": "ordinal",
+      "domain": {"data": "data_0", "field": "Decile", "sort": true},
+      "range": {"scheme": "tealblues"},
+      "reverse": true
+    },
+    {
+      "name": "size",
+      "type": "linear",
+      "domain": {"data": "data_0", "field": "Total"},
+      "range": [10, 500],
+      "zero": true
+    }
+  ],
+  "axes": [
+    {
+      "scale": "x",
+      "orient": "bottom",
+      "gridScale": "y",
+      "grid": true,
+      "tickCount": {"signal": "ceil(width/40)"},
+      "domain": false,
+      "labels": false,
+      "aria": false,
+      "maxExtent": 0,
+      "minExtent": 0,
+      "ticks": false,
+      "zindex": 0
+    },
+    {
+      "scale": "y",
+      "orient": "left",
+      "gridScale": "x",
+      "grid": true,
+      "tickCount": {"signal": "ceil(height/40)"},
+      "domain": false,
+      "labels": false,
+      "aria": false,
+      "maxExtent": 0,
+      "minExtent": 0,
+      "ticks": false,
+      "zindex": 0
+    },
+    {
+      "scale": "x",
+      "orient": "bottom",
+      "grid": false,
+      "title": "SEIFA Advantage Score",
+      "labelFlush": true,
+      "labelOverlap": true,
+      "tickCount": {"signal": "ceil(width/40)"},
+      "zindex": 0
+    },
+    {
+      "scale": "y",
+      "orient": "left",
+      "grid": false,
+      "title": "Solar Installations per 1,000 Residents",
+      "labelOverlap": true,
+      "tickCount": {"signal": "ceil(height/40)"},
+      "zindex": 0
+    }
+  ],
+  "legends": [
+    {
+      "title": "SEIFA Decile",
+      "fill": "color",
+      "symbolType": "circle",
+      "encode": {
+        "labels": {
+          "name": "Decile_legend_labels",
+          "interactive": true,
+          "update": {
+            "opacity": [
+              {
+                "test": "(!length(data(\"Decile_Selection_store\")) || (Decile_Selection[\"Decile\"] && indexof(Decile_Selection[\"Decile\"], datum.value) >= 0))",
+                "value": 1
+              },
+              {"value": 0.35}
+            ],
+            "cursor": {"value": "pointer"}
+          }
+        },
+        "symbols": {
+          "name": "Decile_legend_symbols",
+          "interactive": true,
+          "update": {
+            "stroke": {"value": "#2c3e50"},
+            "opacity": [
+              {
+                "test": "(!length(data(\"Decile_Selection_store\")) || (Decile_Selection[\"Decile\"] && indexof(Decile_Selection[\"Decile\"], datum.value) >= 0))",
+                "value": 0.7
+              },
+              {"value": 0.35}
+            ],
+            "cursor": {"value": "pointer"}
+          }
+        },
+        "entries": {
+          "name": "Decile_legend_entries",
+          "interactive": true,
+          "update": {
+            "fill": {"value": "transparent"},
+            "cursor": {"value": "pointer"}
+          }
+        }
+      }
+    },
+    {
+      "title": "Total Installations",
+      "size": "size",
+      "symbolType": "circle",
+      "encode": {
+        "symbols": {
+          "update": {
+            "fill": {"value": "black"},
+            "stroke": {"value": "#2c3e50"},
+            "fillOpacity": {"value": 0.7},
+            "opacity": {"value": 0.7}
+          }
+        }
+      }
+    }
+  ],
+  "config": {
+    "style": {
+      "guide-label": {"font": "sans-serif"},
+      "guide-title": {"font": "sans-serif"},
+      "group-title": {"font": "sans-serif"},
+      "group-subtitle": {"font": "sans-serif"},
+      "cell": {"stroke": "transparent"},
+      "text": {"font": "sans-serif"}
+    }
+  }
+}
