@@ -1,0 +1,168 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "background": "white",
+  "padding": 5,
+  "width": 800,
+  "height": 600,
+  "title": {
+    "text": "Australian Residential Solar PV Adoption Map",
+    "subtitle": "Total installations by Postcode. Select a region to auto-zoom.",
+    "fontSize": 18,
+    "anchor": "start",
+    "color": "#2c3e50"
+  },
+  "style": "view",
+  "data": [
+    {
+      "name": "source_1",
+      "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-solar-installations.csv",
+      "format": {"type": "csv", "delimiter": ","}
+    },
+    {
+      "name": "source_2",
+      "url": "https://ntlan94.github.io/FIT2079_DV2/data/australian_states.topojson",
+      "format": {"type": "topojson", "feature": "STE_2016_AUST"}
+    },
+    {
+      "name": "source_0",
+      "url": "https://ntlan94.github.io/FIT2079_DV2/data/Australia_poa.topojson",
+      "format": {"type": "topojson", "feature": "POA_2016_AUST"},
+      "transform": [
+        {
+          "type": "formula",
+          "expr": "toString(datum.properties.POA_CODE16)",
+          "as": "Postcode"
+        },
+        {
+          "type": "lookup",
+          "from": "source_1",
+          "key": "Postcode",
+          "fields": ["Postcode"],
+          "values": ["Total"]
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum[\"Total\"]) && isFinite(+datum[\"Total\"])"
+        }
+      ]
+    }
+  ],
+  "projections": [
+    {
+      "name": "projection",
+      "translate": {"signal": "[width / 2, height / 2]"},
+      "type": "equirectangular",
+      "center": {
+        "signal": "state_focus == 'National' ? [133, -28] : state_focus == 'VIC' ? [145, -37.2] : state_focus == 'NSW' ? [147, -32.8] : state_focus == 'QLD' ? [144.5, -22.5] : state_focus == 'WA' ? [122, -26.0] : state_focus == 'SA' ? [135, -30.0] : state_focus == 'TAS' ? [146.5, -42.0] : state_focus == 'NT' ? [133.5, -19.5] : [133, -28]"
+      },
+      "scale": {
+        "signal": "zoom_level * (state_focus == 'National' ? 1 : state_focus == 'VIC' ? 3.5 : state_focus == 'NSW' ? 3.0 : state_focus == 'QLD' ? 2.3 : state_focus == 'WA' ? 2.0 : state_focus == 'SA' ? 2.5 : state_focus == 'TAS' ? 5.5 : state_focus == 'NT' ? 2.8 : 1)"
+      }
+    }
+  ],
+  "signals": [
+    {
+      "name": "state_focus",
+      "value": "National",
+      "bind": {
+        "input": "select",
+        "options": ["National", "VIC", "NSW", "QLD", "WA", "SA", "TAS", "NT"],
+        "labels": [
+          "National Focus",
+          "Victoria",
+          "New South Wales",
+          "Queensland",
+          "Western Australia",
+          "South Australia",
+          "Tasmania",
+          "Northern Territory"
+        ],
+        "name": "Region Focus: "
+      }
+    },
+    {
+      "name": "zoom_level",
+      "value": 800,
+      "bind": {
+        "input": "range",
+        "min": 400,
+        "max": 3000,
+        "step": 50,
+        "name": "Manual Zoom: "
+      }
+    }
+  ],
+  "marks": [
+    {
+      "name": "layer_0_marks",
+      "type": "shape",
+      "clip": true,
+      "style": ["geoshape"],
+      "from": {"data": "source_0"},
+      "encode": {
+        "update": {
+          "stroke": {"value": "#ffffff"},
+          "strokeWidth": {"value": 0.2},
+          "fill": [
+            {
+              "test": "datum.Total == null || datum.Total <= 0",
+              "value": "#eeeeee"
+            },
+            {"scale": "color", "field": "Total"}
+          ],
+          "tooltip": {
+            "signal": "{\"Postcode\": isValid(datum[\"Postcode\"]) ? isArray(datum[\"Postcode\"]) ? join(datum[\"Postcode\"], '\\n') : datum[\"Postcode\"] : \"\"+datum[\"Postcode\"], \"Total Systems\": format(datum[\"Total\"], \",\")}"
+          },
+          "ariaRoleDescription": {"value": "geoshape"},
+          "description": {
+            "signal": "\"Total: \" + (format(datum[\"Total\"], \"\")) + \"; Postcode: \" + (isValid(datum[\"Postcode\"]) ? isArray(datum[\"Postcode\"]) ? join(datum[\"Postcode\"], ' ') : datum[\"Postcode\"] : \"\"+datum[\"Postcode\"]) + \"; Total Systems: \" + (format(datum[\"Total\"], \",\"))"
+          }
+        }
+      },
+      "transform": [{"type": "geoshape", "projection": "projection"}]
+    },
+    {
+      "name": "layer_1_marks",
+      "type": "shape",
+      "clip": true,
+      "style": ["geoshape"],
+      "from": {"data": "source_2"},
+      "encode": {
+        "update": {
+          "fill": {"value": null},
+          "stroke": {"value": "#2c3e50"},
+          "strokeWidth": {"value": 1.2},
+          "ariaRoleDescription": {"value": "geoshape"}
+        }
+      },
+      "transform": [{"type": "geoshape", "projection": "projection"}]
+    }
+  ],
+  "scales": [
+    {
+      "name": "color",
+      "type": "linear",
+      "domain": {"data": "source_0", "field": "Total"},
+      "range": {"scheme": "oranges"},
+      "interpolate": "hcl",
+      "zero": false
+    }
+  ],
+  "legends": [
+    {
+      "title": "Installations",
+      "fill": "color",
+      "gradientLength": {"signal": "clamp(height, 64, 200)"}
+    }
+  ],
+  "config": {
+    "style": {
+      "guide-label": {"font": "sans-serif"},
+      "guide-title": {"font": "sans-serif"},
+      "group-title": {"font": "sans-serif"},
+      "group-subtitle": {"font": "sans-serif"},
+      "cell": {"stroke": null},
+      "text": {"font": "sans-serif"}
+    }
+  }
+}
