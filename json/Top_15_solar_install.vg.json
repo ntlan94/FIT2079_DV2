@@ -37,6 +37,7 @@
       "field": "Total",
       "type": "quantitative",
       "title": "Total Installations",
+      "scale": {"domainMin": 950},
       "axis": {"labelFontSize": 12, "titleFontSize": 14}
     },
     "tooltip": [
