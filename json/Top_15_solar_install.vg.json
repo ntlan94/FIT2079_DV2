@@ -14,7 +14,7 @@
   "data": [
     {
       "name": "source_0",
-      "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-solar-installations.csv",
+      "url": "data/sgu-solar-installations.csv",
       "format": {
         "type": "csv",
         "parse": {"Postcode": "string", "Total": "number"},
