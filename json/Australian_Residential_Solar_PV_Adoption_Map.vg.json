@@ -31,7 +31,7 @@
     }
   },
   "data": {
-    "url": "https://ntlan94.github.io/FIT2079_DV2/data/Australia_poa.topojson",
+    "url": "data/Australia_poa.topojson",
     "format": {"type": "topojson", "feature": "POA_2016_AUST"}
   },
   "transform": [
