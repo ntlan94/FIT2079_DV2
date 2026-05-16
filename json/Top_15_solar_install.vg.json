@@ -1,144 +1,51 @@
 {
-  "$schema": "https://vega.github.io/schema/vega/v6.json",
-  "background": "white",
-  "padding": 5,
-  "width": 800,
-  "height": 500,
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": {
     "text": "Top 15 Australian Postcodes by Solar Installations",
     "fontSize": 18,
     "anchor": "start",
     "color": "#2c3e50"
   },
-  "style": "cell",
-  "data": [
+  "width": 800,
+  "height": 500,
+  "data": {
+    "url": "data/sgu-solar-installations.csv",
+    "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
+  },
+  "transform": [
+    {"filter": "datum.Total > 0"},
     {
-      "name": "source_0",
-      "url": "data/sgu-solar-installations.csv",
-      "format": {
-        "type": "csv",
-        "parse": {"Postcode": "string", "Total": "number"},
-        "delimiter": ","
-      },
-      "transform": [
-        {"type": "filter", "expr": "datum.Total != null && datum.Total > 0"},
-        {
-          "type": "window",
-          "params": [null],
-          "as": ["rank"],
-          "ops": ["rank"],
-          "fields": [null],
-          "sort": {"field": ["Total"], "order": ["descending"]}
-        },
-        {"type": "filter", "expr": "datum.rank <= 15"}
-      ]
+      "window": [{"op": "rank", "as": "rank"}],
+      "sort": [{"field": "Total", "order": "descending"}]
     },
-    {
-      "name": "data_0",
-      "source": "source_0",
-      "transform": [
-        {
-          "type": "stack",
-          "groupby": ["Postcode"],
-          "field": "Total",
-          "sort": {"field": [], "order": []},
-          "as": ["Total_start", "Total_end"],
-          "offset": "zero"
-        },
-        {
-          "type": "filter",
-          "expr": "isValid(datum[\"Total\"]) && isFinite(+datum[\"Total\"])"
-        }
-      ]
-    }
+    {"filter": "datum.rank <= 15"}
   ],
-  "marks": [
-    {
-      "name": "marks",
-      "type": "rect",
-      "style": ["bar"],
-      "from": {"data": "data_0"},
-      "encode": {
-        "update": {
-          "fill": {"value": "#f39c12"},
-          "tooltip": {
-            "signal": "{\"Postcode\": isValid(datum[\"Postcode\"]) ? isArray(datum[\"Postcode\"]) ? join(datum[\"Postcode\"], '\\n') : datum[\"Postcode\"] : \"\"+datum[\"Postcode\"], \"Total\": format(datum[\"Total\"], \",\")}"
-          },
-          "ariaRoleDescription": {"value": "bar"},
-          "description": {
-            "signal": "\"Total Installations: \" + (format(datum[\"Total\"], \"\")) + \"; Postcode: \" + (isValid(datum[\"Postcode\"]) ? isArray(datum[\"Postcode\"]) ? join(datum[\"Postcode\"], ' ') : datum[\"Postcode\"] : \"\"+datum[\"Postcode\"]) + \"; Total: \" + (format(datum[\"Total\"], \",\"))"
-          },
-          "x": {"scale": "x", "field": "Total_end"},
-          "x2": {"scale": "x", "field": "Total_start"},
-          "y": {"scale": "y", "field": "Postcode"},
-          "height": {"signal": "max(0.25, bandwidth('y'))"}
-        }
-      }
-    }
-  ],
-  "scales": [
-    {
-      "name": "x",
-      "type": "linear",
-      "domain": {"data": "data_0", "fields": ["Total_start", "Total_end"]},
-      "range": [0, {"signal": "width"}],
-      "nice": true,
-      "zero": true
-    },
-    {
-      "name": "y",
-      "type": "band",
-      "domain": {
-        "data": "source_0",
-        "field": "Postcode",
-        "sort": {"op": "sum", "field": "Total", "order": "descending"}
-      },
-      "range": [0, {"signal": "height"}],
-      "paddingInner": 0.1,
-      "paddingOuter": 0.05
-    }
-  ],
-  "axes": [
-    {
-      "scale": "x",
-      "orient": "bottom",
-      "gridScale": "y",
-      "grid": true,
-      "tickCount": {"signal": "ceil(width/40)"},
-      "domain": false,
-      "labels": false,
-      "aria": false,
-      "maxExtent": 0,
-      "minExtent": 0,
-      "ticks": false,
-      "zindex": 0
-    },
-    {
-      "scale": "x",
-      "orient": "bottom",
-      "grid": false,
-      "title": "Total Installations",
-      "labelFlush": true,
-      "labelOverlap": true,
-      "tickCount": {"signal": "ceil(width/40)"},
-      "zindex": 0
-    },
-    {
-      "scale": "y",
-      "orient": "left",
-      "grid": false,
+  "mark": {
+    "type": "bar",
+    "color": "#f39c12",
+    "cornerRadiusEnd": 4
+  },
+  "encoding": {
+    "y": {
+      "field": "Postcode",
+      "type": "nominal",
+      "sort": {"field": "Total", "order": "descending"},
       "title": "Postcode",
-      "zindex": 0
-    }
-  ],
+      "axis": {"labelFontSize": 12, "titleFontSize": 14}
+    },
+    "x": {
+      "field": "Total",
+      "type": "quantitative",
+      "title": "Total Installations",
+      "axis": {"labelFontSize": 12, "titleFontSize": 14}
+    },
+    "tooltip": [
+      {"field": "Postcode", "type": "nominal"},
+      {"field": "Total", "type": "quantitative", "format": ",", "title": "Total Installations"}
+    ]
+  },
   "config": {
-    "style": {
-      "guide-label": {"font": "sans-serif"},
-      "guide-title": {"font": "sans-serif"},
-      "group-title": {"font": "sans-serif"},
-      "group-subtitle": {"font": "sans-serif"},
-      "cell": {"stroke": null},
-      "text": {"font": "sans-serif"}
-    }
+    "view": {"stroke": "transparent"},
+    "font": "sans-serif"
   }
 }
