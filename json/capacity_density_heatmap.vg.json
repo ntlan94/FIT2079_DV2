@@ -15,12 +15,12 @@
   "data": [
     {
       "name": "source_1",
-      "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-solar-capacity.csv",
+      "url": "data/sgu-solar-capacity.csv",
       "format": {"type": "csv", "delimiter": ","}
     },
     {
       "name": "source_0",
-      "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-solar-installations.csv",
+      "url": "data/sgu-solar-installations.csv",
       "format": {"type": "csv", "delimiter": ","},
       "transform": [
         {"type": "formula", "expr": "toString(datum.Postcode)", "as": "PC"},
