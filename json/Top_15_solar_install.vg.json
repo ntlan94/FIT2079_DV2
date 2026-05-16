@@ -21,9 +21,10 @@
     {"filter": "datum.rank <= 15"}
   ],
   "mark": {
-    "type": "bar",
+    "type": "circle",
+    "size": 400,
     "color": "#f39c12",
-    "cornerRadiusEnd": 4
+    "opacity": 1
   },
   "encoding": {
     "y": {
@@ -31,7 +32,13 @@
       "type": "nominal",
       "sort": {"field": "Total", "order": "descending"},
       "title": "Postcode",
-      "axis": {"labelFontSize": 12, "titleFontSize": 14}
+      "axis": {
+        "labelFontSize": 12, 
+        "titleFontSize": 14,
+        "grid": true,
+        "gridDash": [4, 4],
+        "gridColor": "#e0e0e0"
+      }
     },
     "x": {
       "field": "Total",
