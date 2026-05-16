@@ -10,7 +10,52 @@
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
 
-  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* TOÀN BỘ CSS ĐƯỢC GOM LẠI VÀO ĐÂY */
+    @import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;700&display=swap');
+    
+    body {
+        font-family: 'Urbanist', sans-serif;
+        background-color: #f4f7f6;
+        margin: 0;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 40px;
+        width: 860px; /* Đã fix cứng chiều rộng để biểu đồ không bị biến mất */
+        max-width: 95%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    h1 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    p.description {
+        color: #7f8c8d;
+        max-width: 800px;
+        text-align: center;
+        margin-bottom: 40px;
+        line-height: 1.6;
+    }
+
+    .vis-container {
+        width: 100%;
+        display: block; /* Trả về block để Vega-Lite vẽ hình ổn định */
+    }
+  </style>
 
 </head>
 
