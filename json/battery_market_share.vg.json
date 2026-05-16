@@ -15,7 +15,7 @@
   "data": [
     {
       "name": "source_0",
-      "url": "https://ntlan94.github.io/FIT2079_DV2/data/historical-battery-installation.csv",
+      "url": "data/historical-battery-installation.csv",
       "format": {"type": "csv", "delimiter": ","},
       "transform": [
         {
