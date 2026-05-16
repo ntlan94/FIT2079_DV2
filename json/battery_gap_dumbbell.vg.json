@@ -1,245 +1,78 @@
 {
-  "$schema": "https://vega.github.io/schema/vega/v6.json",
-  "background": "white",
-  "padding": 5,
-  "width": 700,
-  "height": 300,
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": {
     "text": "The Energy Storage Gap: Solar vs. Battery",
     "subtitle": "Dumbbell Plot showing the massive disparity between generation and storage in Top 5 States",
-    "fontSize": 18,
-    "anchor": "start",
-    "color": "#2c3e50"
+    "fontSize": 18, "anchor": "start", "color": "#2c3e50"
   },
-  "style": "cell",
-  "data": [
+  "data": {
+    "url": "data/sgu-solar-installations.csv",
+    "format": {"type": "csv"}
+  },
+  "transform": [
+    {"calculate": "toString(datum.Postcode)", "as": "PC"},
+    {"calculate": "toNumber(replace(toString(datum.Total), /,/g, ''))", "as": "Solar_Qty_Clean"},
+    {"calculate": "isValid(datum.Solar_Qty_Clean) ? datum.Solar_Qty_Clean : 0", "as": "Solar_Qty"},
     {
-      "name": "source_1",
-      "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-battery-installations.csv",
-      "format": {"type": "csv", "delimiter": ","}
-    },
-    {
-      "name": "source_0",
-      "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-solar-installations.csv",
-      "format": {
-        "type": "csv",
-        "parse": {"Postcode": "string", "Total": "number"},
-        "delimiter": ","
-      },
-      "transform": [
-        {"type": "formula", "expr": "toString(datum.Postcode)", "as": "PC"},
-        {
-          "type": "formula",
-          "expr": "isValid(datum.Total) ? datum.Total : 0",
-          "as": "Solar_Qty"
-        },
-        {
-          "type": "lookup",
-          "from": "source_1",
-          "key": "Postcode",
-          "fields": ["PC"],
-          "values": ["Total"],
-          "as": ["Battery_Qty"]
-        },
-        {
-          "type": "formula",
-          "expr": "isValid(datum.Battery_Qty) ? datum.Battery_Qty : 0",
-          "as": "Battery_Qty_Clean"
-        },
-        {
-          "type": "formula",
-          "expr": "length(datum.PC) == 3 ? '0' + datum.PC : datum.PC",
-          "as": "PC_pad"
-        },
-        {
-          "type": "formula",
-          "expr": "datum.PC_pad[0] == '2' ? 'NSW' : datum.PC_pad[0] == '3' ? 'VIC' : datum.PC_pad[0] == '4' ? 'QLD' : datum.PC_pad[0] == '5' ? 'SA' : datum.PC_pad[0] == '6' ? 'WA' : 'Other'",
-          "as": "State"
-        },
-        {"type": "filter", "expr": "datum.State != 'Other'"},
-        {
-          "type": "aggregate",
-          "groupby": ["State"],
-          "ops": ["sum", "sum"],
-          "fields": ["Solar_Qty", "Battery_Qty_Clean"],
-          "as": ["Total_Solar", "Total_Battery"]
-        },
-        {
-          "type": "fold",
-          "fields": ["Total_Solar", "Total_Battery"],
-          "as": ["Technology", "Count"]
-        }
-      ]
-    },
-    {
-      "name": "data_0",
-      "source": "source_0",
-      "transform": [
-        {
-          "type": "filter",
-          "expr": "isValid(datum[\"Count\"]) && isFinite(+datum[\"Count\"])"
-        }
-      ]
-    }
-  ],
-  "marks": [
-    {
-      "name": "layer_0_pathgroup",
-      "type": "group",
+      "lookup": "PC",
       "from": {
-        "facet": {
-          "name": "faceted_path_layer_0_main",
-          "data": "source_0",
-          "groupby": ["State"]
-        }
+        "data": {
+          "url": "data/sgu-battery-installations.csv",
+          "format": {"type": "csv"}
+        },
+        "key": "Postcode", "fields": ["Total"]
       },
-      "encode": {
-        "update": {
-          "width": {"field": {"group": "width"}},
-          "height": {"field": {"group": "height"}}
-        }
-      },
-      "marks": [
-        {
-          "name": "layer_0_marks",
-          "type": "line",
-          "style": ["line"],
-          "sort": {"field": "y"},
-          "from": {"data": "faceted_path_layer_0_main"},
-          "encode": {
-            "update": {
-              "stroke": {"value": "#bdc3c7"},
-              "description": {
-                "signal": "\"Number of Installations: \" + (format(datum[\"Count\"], \"\")) + \"; State: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"])"
-              },
-              "x": {"scale": "x", "field": "Count"},
-              "y": {"scale": "y", "field": "State"},
-              "strokeWidth": {"value": 4},
-              "defined": {
-                "signal": "isValid(datum[\"Count\"]) && isFinite(+datum[\"Count\"])"
-              }
-            }
-          }
-        }
-      ]
+      "as": ["Battery_Total_Raw"]
+    },
+    {"calculate": "toNumber(replace(toString(datum.Battery_Total_Raw), /,/g, ''))", "as": "Battery_Qty_Clean"},
+    {"calculate": "isValid(datum.Battery_Qty_Clean) ? datum.Battery_Qty_Clean : 0", "as": "Battery_Qty"},
+    {"calculate": "length(datum.PC) == 3 ? '0' + datum.PC : datum.PC", "as": "PC_pad"},
+    {"calculate": "datum.PC_pad[0] == '2' ? 'NSW' : datum.PC_pad[0] == '3' ? 'VIC' : datum.PC_pad[0] == '4' ? 'QLD' : datum.PC_pad[0] == '5' ? 'SA' : datum.PC_pad[0] == '6' ? 'WA' : 'Other'", "as": "State"},
+    {"filter": "datum.State != 'Other'"},
+    {
+      "aggregate": [
+        {"op": "sum", "field": "Solar_Qty", "as": "Total_Solar"},
+        {"op": "sum", "field": "Battery_Qty", "as": "Total_Battery"}
+      ],
+      "groupby": ["State"]
+    },
+    {"fold": ["Total_Solar", "Total_Battery"], "as": ["Technology", "Count"]}
+  ],
+  "width": 700, "height": 300,
+  "encoding": {
+    "y": {
+      "field": "State", "type": "nominal",
+      "sort": {"field": "Count", "op": "max", "order": "descending"},
+      "title": null, "axis": {"labelFontSize": 14, "labelFontWeight": "bold"}
+    },
+    "x": {
+      "field": "Count", "type": "quantitative", "title": "Number of Installations",
+      "axis": {"labelExpr": "datum.value / 1000 + 'k'"}
+    }
+  },
+  "layer": [
+    {
+      "mark": {"type": "line", "color": "#bdc3c7", "size": 4},
+      "encoding": {"detail": {"field": "State", "type": "nominal"}}
     },
     {
-      "name": "layer_1_marks",
-      "type": "symbol",
-      "style": ["point"],
-      "from": {"data": "data_0"},
-      "encode": {
-        "update": {
-          "opacity": {"value": 1},
-          "size": {"value": 400},
-          "fill": {"scale": "color", "field": "Technology"},
-          "tooltip": {
-            "signal": "{\"State\": isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], '\\n') : datum[\"State\"] : \"\"+datum[\"State\"], \"System Type\": isValid(datum[\"Technology\"]) ? isArray(datum[\"Technology\"]) ? join(datum[\"Technology\"], '\\n') : datum[\"Technology\"] : \"\"+datum[\"Technology\"], \"Total Installs\": format(datum[\"Count\"], \",\")}"
+      "mark": {"type": "point", "size": 400, "filled": true, "opacity": 1},
+      "encoding": {
+        "color": {
+          "field": "Technology", "type": "nominal",
+          "scale": {
+            "domain": ["Total_Solar", "Total_Battery"],
+            "range": ["#f1c40f", "#8e44ad"]
           },
-          "ariaRoleDescription": {"value": "point"},
-          "description": {
-            "signal": "\"Number of Installations: \" + (format(datum[\"Count\"], \"\")) + \"; State: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"]) + \"; Technology: \" + (isValid(datum[\"Technology\"]) ? isArray(datum[\"Technology\"]) ? join(datum[\"Technology\"], ' ') : datum[\"Technology\"] : \"\"+datum[\"Technology\"]) + \"; System Type: \" + (isValid(datum[\"Technology\"]) ? isArray(datum[\"Technology\"]) ? join(datum[\"Technology\"], ' ') : datum[\"Technology\"] : \"\"+datum[\"Technology\"]) + \"; Total Installs: \" + (format(datum[\"Count\"], \",\"))"
-          },
-          "x": {"scale": "x", "field": "Count"},
-          "y": {"scale": "y", "field": "State"}
-        }
-      }
-    }
-  ],
-  "scales": [
-    {
-      "name": "x",
-      "type": "linear",
-      "domain": {
-        "fields": [
-          {"data": "source_0", "field": "Count"},
-          {"data": "data_0", "field": "Count"}
+          "legend": {"title": "Technology", "labelExpr": "datum.label == 'Total_Solar' ? 'Solar PV' : 'Battery Storage'"}
+        },
+        "tooltip": [
+          {"field": "State", "type": "nominal"},
+          {"field": "Technology", "type": "nominal", "title": "System Type"},
+          {"field": "Count", "type": "quantitative", "title": "Total Installs", "format": ","}
         ]
-      },
-      "range": [0, {"signal": "width"}],
-      "nice": true,
-      "zero": true
-    },
-    {
-      "name": "y",
-      "type": "point",
-      "domain": {
-        "data": "source_0",
-        "field": "State",
-        "sort": {"op": "max", "field": "Count", "order": "descending"}
-      },
-      "range": [0, {"signal": "height"}],
-      "padding": 0.5
-    },
-    {
-      "name": "color",
-      "type": "ordinal",
-      "domain": ["Total_Solar", "Total_Battery"],
-      "range": ["#f1c40f", "#8e44ad"]
-    }
-  ],
-  "axes": [
-    {
-      "scale": "x",
-      "orient": "bottom",
-      "gridScale": "y",
-      "grid": true,
-      "tickCount": {"signal": "ceil(width/40)"},
-      "domain": false,
-      "labels": false,
-      "aria": false,
-      "maxExtent": 0,
-      "minExtent": 0,
-      "ticks": false,
-      "zindex": 0
-    },
-    {
-      "scale": "x",
-      "orient": "bottom",
-      "grid": false,
-      "title": "Number of Installations",
-      "labelFlush": true,
-      "labelOverlap": true,
-      "tickCount": {"signal": "ceil(width/40)"},
-      "encode": {
-        "labels": {"update": {"text": {"signal": "datum.value / 1000 + 'k'"}}}
-      },
-      "zindex": 0
-    },
-    {
-      "scale": "y",
-      "orient": "left",
-      "grid": false,
-      "labelFontSize": 14,
-      "labelFontWeight": "bold",
-      "zindex": 0
-    }
-  ],
-  "legends": [
-    {
-      "title": "Technology",
-      "fill": "color",
-      "symbolType": "circle",
-      "encode": {
-        "symbols": {"update": {"opacity": {"value": 1}}},
-        "labels": {
-          "update": {
-            "text": {
-              "signal": "datum.label == 'Total_Solar' ? 'Solar PV' : 'Battery Storage'"
-            }
-          }
-        }
       }
     }
   ],
-  "config": {
-    "style": {
-      "guide-label": {"font": "sans-serif"},
-      "guide-title": {"font": "sans-serif"},
-      "group-title": {"font": "sans-serif"},
-      "group-subtitle": {"font": "sans-serif"},
-      "cell": {"stroke": "transparent"},
-      "text": {"font": "sans-serif"}
-    }
-  }
+  "config": {"view": {"stroke": "transparent"}, "font": "sans-serif"}
 }
