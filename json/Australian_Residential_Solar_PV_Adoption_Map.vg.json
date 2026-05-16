@@ -39,7 +39,7 @@
     {
       "lookup": "Postcode",
       "from": {
-        "data": {"url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-solar-installations.csv", "format": {"type": "csv"}},
+        "data": {"url": "data/sgu-solar-installations.csv", "format": {"type": "csv"}},
         "key": "Postcode", "fields": ["Total"]
       }
     }
