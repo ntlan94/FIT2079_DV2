@@ -10,7 +10,7 @@
   "width": 650,
   "height": 350,
   "data": {
-    "url": "https://ntlan94.github.io/FIT2079_DV2/data/sgu-solar-installations.csv",
+    "url": "data/sgu-solar-installations.csv",
     "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
   },
   "transform": [
@@ -22,7 +22,7 @@
       "lookup": "PC",
       "from": {
         "data": {
-          "url": "https://ntlan94.github.io/FIT2079_DV2/data/swh-air-source-heat-pump-installations.csv",
+          "url": "data/swh-air-source-heat-pump-installations.csv",
           "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
         },
         "key": "Postcode",
