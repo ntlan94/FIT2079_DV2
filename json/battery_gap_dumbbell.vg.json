@@ -3,63 +3,75 @@
   "title": {
     "text": "The Energy Storage Gap: Solar vs. Battery",
     "subtitle": "Dumbbell Plot showing the massive disparity between generation and storage in Top 5 States",
-    "fontSize": 18, "anchor": "start", "color": "#2c3e50"
+    "fontSize": 18,
+    "anchor": "start",
+    "color": "#2c3e50"
   },
   "data": {
-    "url": "data/sgu-solar-installations.csv",
-    "format": {"type": "csv"}
+    "url": "https://raw.githubusercontent.com/ntlan94/FIT2179_DV2/main/data/sgu-solar-installations.csv",
+    "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
   },
   "transform": [
     {"calculate": "toString(datum.Postcode)", "as": "PC"},
-    {"calculate": "toNumber(replace(toString(datum.Total), /,/g, ''))", "as": "Solar_Qty_Clean"},
-    {"calculate": "isValid(datum.Solar_Qty_Clean) ? datum.Solar_Qty_Clean : 0", "as": "Solar_Qty"},
+    {"calculate": "isValid(datum.Total) ? datum.Total : 0", "as": "Solar_Qty"},
     {
       "lookup": "PC",
       "from": {
         "data": {
-          "url": "data/sgu-battery-installations.csv",
-          "format": {"type": "csv"}
+          "url": "https://raw.githubusercontent.com/ntlan94/FIT2179_DV2/main/data/sgu-battery-installations.csv",
+          "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
         },
-        "key": "Postcode", "fields": ["Total"]
+        "key": "Postcode",
+        "fields": ["Total"]
       },
-      "as": ["Battery_Total_Raw"]
+      "as": ["Battery_Qty"]
     },
-    {"calculate": "toNumber(replace(toString(datum.Battery_Total_Raw), /,/g, ''))", "as": "Battery_Qty_Clean"},
-    {"calculate": "isValid(datum.Battery_Qty_Clean) ? datum.Battery_Qty_Clean : 0", "as": "Battery_Qty"},
+    {"calculate": "isValid(datum.Battery_Qty) ? datum.Battery_Qty : 0", "as": "Battery_Qty_Clean"},
     {"calculate": "length(datum.PC) == 3 ? '0' + datum.PC : datum.PC", "as": "PC_pad"},
     {"calculate": "datum.PC_pad[0] == '2' ? 'NSW' : datum.PC_pad[0] == '3' ? 'VIC' : datum.PC_pad[0] == '4' ? 'QLD' : datum.PC_pad[0] == '5' ? 'SA' : datum.PC_pad[0] == '6' ? 'WA' : 'Other'", "as": "State"},
     {"filter": "datum.State != 'Other'"},
     {
       "aggregate": [
         {"op": "sum", "field": "Solar_Qty", "as": "Total_Solar"},
-        {"op": "sum", "field": "Battery_Qty", "as": "Total_Battery"}
+        {"op": "sum", "field": "Battery_Qty_Clean", "as": "Total_Battery"}
       ],
       "groupby": ["State"]
     },
-    {"fold": ["Total_Solar", "Total_Battery"], "as": ["Technology", "Count"]}
+    {
+      "fold": ["Total_Solar", "Total_Battery"],
+      "as": ["Technology", "Count"]
+    }
   ],
-  "width": 700, "height": 300,
+  "width": 700,
+  "height": 300,
   "encoding": {
     "y": {
-      "field": "State", "type": "nominal",
+      "field": "State",
+      "type": "nominal",
       "sort": {"field": "Count", "op": "max", "order": "descending"},
-      "title": null, "axis": {"labelFontSize": 14, "labelFontWeight": "bold"}
+      "title": null,
+      "axis": {"labelFontSize": 14, "labelFontWeight": "bold"}
     },
     "x": {
-      "field": "Count", "type": "quantitative", "title": "Number of Installations",
+      "field": "Count",
+      "type": "quantitative",
+      "title": "Number of Installations",
       "axis": {"labelExpr": "datum.value / 1000 + 'k'"}
     }
   },
   "layer": [
     {
       "mark": {"type": "line", "color": "#bdc3c7", "size": 4},
-      "encoding": {"detail": {"field": "State", "type": "nominal"}}
+      "encoding": {
+        "detail": {"field": "State", "type": "nominal"}
+      }
     },
     {
       "mark": {"type": "point", "size": 400, "filled": true, "opacity": 1},
       "encoding": {
         "color": {
-          "field": "Technology", "type": "nominal",
+          "field": "Technology",
+          "type": "nominal",
           "scale": {
             "domain": ["Total_Solar", "Total_Battery"],
             "range": ["#f1c40f", "#8e44ad"]
@@ -74,5 +86,8 @@
       }
     }
   ],
-  "config": {"view": {"stroke": "transparent"}, "font": "sans-serif"}
+  "config": {
+    "view": {"stroke": "transparent"},
+    "font": "sans-serif"
+  }
 }
