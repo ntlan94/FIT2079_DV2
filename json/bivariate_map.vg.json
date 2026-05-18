@@ -1,0 +1,139 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "background": "white",
+  "padding": 5,
+  "width": 800,
+  "height": 600,
+  "title": {
+    "text": "Solar vs. Battery Convergence Map",
+    "subtitle": "Bivariate Choropleth highlighting regions with high solar but low battery adoption",
+    "fontSize": 18,
+    "anchor": "start",
+    "color": "#2c3e50"
+  },
+  "style": "view",
+  "data": [
+    {
+      "name": "source_1",
+      "url": "data/sgu-solar-installations.csv",
+      "format": {"type": "csv"}
+    },
+    {
+      "name": "source_2",
+      "url": "data/sgu-battery-installations.csv",
+      "format": {"type": "csv"}
+    },
+    {
+      "name": "source_0",
+      "url": "data/Australia_poa.topojson",
+      "format": {"type": "topojson", "feature": "POA_2016_AUST"},
+      "transform": [
+        {
+          "type": "formula",
+          "expr": "toString(datum.properties.POA_CODE16)",
+          "as": "Postcode"
+        },
+        {
+          "type": "lookup",
+          "from": "source_1",
+          "key": "Postcode",
+          "fields": ["Postcode"],
+          "values": ["Total"],
+          "as": ["Solar_Qty"]
+        },
+        {
+          "type": "lookup",
+          "from": "source_2",
+          "key": "Postcode",
+          "fields": ["Postcode"],
+          "values": ["Total"],
+          "as": ["Battery_Qty"]
+        },
+        {
+          "type": "formula",
+          "expr": "isValid(datum.Solar_Qty) ? datum.Solar_Qty : 0",
+          "as": "S_Qty"
+        },
+        {
+          "type": "formula",
+          "expr": "isValid(datum.Battery_Qty) ? datum.Battery_Qty : 0",
+          "as": "B_Qty"
+        },
+        {
+          "type": "formula",
+          "expr": "datum.S_Qty < 500 ? '1' : datum.S_Qty < 2000 ? '2' : '3'",
+          "as": "S_Class"
+        },
+        {
+          "type": "formula",
+          "expr": "datum.B_Qty < 10 ? '1' : datum.B_Qty < 50 ? '2' : '3'",
+          "as": "B_Class"
+        },
+        {
+          "type": "formula",
+          "expr": "datum.S_Class + '-' + datum.B_Class",
+          "as": "Bivariate_Class"
+        }
+      ]
+    }
+  ],
+  "projections": [
+    {
+      "name": "projection",
+      "size": {"signal": "[width, height]"},
+      "fit": {"signal": "data('source_0')"},
+      "type": "equirectangular"
+    }
+  ],
+  "marks": [
+    {
+      "name": "marks",
+      "type": "shape",
+      "style": ["geoshape"],
+      "from": {"data": "source_0"},
+      "encode": {
+        "update": {
+          "stroke": {"value": "#ffffff"},
+          "strokeWidth": {"value": 0.1},
+          "fill": {"scale": "color", "field": "Bivariate_Class"},
+          "tooltip": {
+            "signal": "{\"Postcode\": isValid(datum[\"Postcode\"]) ? isArray(datum[\"Postcode\"]) ? join(datum[\"Postcode\"], '\\n') : datum[\"Postcode\"] : \"\"+datum[\"Postcode\"], \"Solar Installations\": format(datum[\"S_Qty\"], \",\"), \"Battery Installations\": format(datum[\"B_Qty\"], \",\")}"
+          },
+          "ariaRoleDescription": {"value": "geoshape"},
+          "description": {
+            "signal": "\"Bivariate_Class: \" + (isValid(datum[\"Bivariate_Class\"]) ? isArray(datum[\"Bivariate_Class\"]) ? join(datum[\"Bivariate_Class\"], ' ') : datum[\"Bivariate_Class\"] : \"\"+datum[\"Bivariate_Class\"]) + \"; Postcode: \" + (isValid(datum[\"Postcode\"]) ? isArray(datum[\"Postcode\"]) ? join(datum[\"Postcode\"], ' ') : datum[\"Postcode\"] : \"\"+datum[\"Postcode\"]) + \"; Solar Installations: \" + (format(datum[\"S_Qty\"], \",\")) + \"; Battery Installations: \" + (format(datum[\"B_Qty\"], \",\"))"
+          }
+        }
+      },
+      "transform": [{"type": "geoshape", "projection": "projection"}]
+    }
+  ],
+  "scales": [
+    {
+      "name": "color",
+      "type": "ordinal",
+      "domain": ["1-1", "1-2", "1-3", "2-1", "2-2", "2-3", "3-1", "3-2", "3-3"],
+      "range": [
+        "#e8e8e8",
+        "#ace4e4",
+        "#5ac8c8",
+        "#dfb0d6",
+        "#a5add3",
+        "#5698b9",
+        "#be64ac",
+        "#8c62aa",
+        "#3b4994"
+      ]
+    }
+  ],
+  "config": {
+    "style": {
+      "guide-label": {"font": "sans-serif"},
+      "guide-title": {"font": "sans-serif"},
+      "group-title": {"font": "sans-serif"},
+      "group-subtitle": {"font": "sans-serif"},
+      "cell": {"stroke": null},
+      "text": {"font": "sans-serif"}
+    }
+  }
+}
