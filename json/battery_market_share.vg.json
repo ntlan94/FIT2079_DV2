@@ -1,214 +1,107 @@
 {
-  "$schema": "https://vega.github.io/schema/vega/v6.json",
-  "background": "white",
-  "padding": 5,
-  "width": 750,
-  "height": 400,
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": {
-    "text": "The Shift in Power: Battery Market Share by State",
+    "text": "The Shift in Power: Evolution of the Residential Battery Market Shared by State",
     "subtitle": "100% Stacked Area Chart showing the shifting dominance from SA to NSW/VIC (2014-2025)",
     "fontSize": 18,
+    "subtitleFontSize": 13,
     "anchor": "start",
-    "color": "#2c3e50"
+    "color": "#2c3e50",
+    "subtitleColor": "#7f8c8d"
   },
-  "style": "cell",
-  "data": [
+  "data": {
+    "url": "data/historical-battery-installation.csv",
+    "format": { "type": "csv" }
+  },
+  "transform": [
     {
-      "name": "source_0",
-      "url": "data/historical-battery-installation.csv",
-      "format": {"type": "csv", "delimiter": ","},
-      "transform": [
-        {
-          "type": "fold",
-          "fields": ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"],
-          "as": ["State", "Installations"]
-        },
-        {
-          "type": "formula",
-          "expr": "toNumber(replace(datum.Installations, /,/g, ''))",
-          "as": "Installs_Num"
-        },
-        {
-          "type": "aggregate",
-          "groupby": ["Installation year", "State"],
-          "ops": ["sum"],
-          "fields": ["Installs_Num"],
-          "as": ["sum_Installs_Num"]
-        },
-        {
-          "type": "impute",
-          "field": "sum_Installs_Num",
-          "groupby": ["State"],
-          "key": "Installation year",
-          "method": "value",
-          "value": 0
-        },
-        {
-          "type": "stack",
-          "groupby": ["Installation year"],
-          "field": "sum_Installs_Num",
-          "sort": {"field": ["State"], "order": ["descending"]},
-          "as": ["sum_Installs_Num_start", "sum_Installs_Num_end"],
-          "offset": "normalize"
-        }
-      ]
+      "fold": ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"],
+      "as": ["State", "RawValue"]
+    },
+    {
+      "calculate": "toNumber(replace(datum.RawValue, ',', ''))",
+      "as": "Installations"
+    },
+    {
+      "calculate": "datetime(toNumber(datum['Installation year']), 0, 1)",
+      "as": "Year"
     }
   ],
-  "marks": [
+  "vconcat": [
     {
-      "name": "layer_0_pathgroup",
-      "type": "group",
-      "from": {
-        "facet": {
-          "name": "faceted_path_layer_0_main",
-          "data": "source_0",
-          "groupby": ["State"]
-        }
-      },
-      "encode": {
-        "update": {
-          "width": {"field": {"group": "width"}},
-          "height": {"field": {"group": "height"}}
-        }
-      },
-      "marks": [
-        {
-          "name": "layer_0_marks",
-          "type": "area",
-          "style": ["area"],
-          "sort": {"field": "x"},
-          "from": {"data": "faceted_path_layer_0_main"},
-          "encode": {
-            "update": {
-              "opacity": {"value": 0.85},
-              "orient": {"value": "vertical"},
-              "fill": {"scale": "color", "field": "State"},
-              "tooltip": {
-                "signal": "{\"Year\": isValid(datum[\"Installation year\"]) ? isArray(datum[\"Installation year\"]) ? join(datum[\"Installation year\"], '\\n') : datum[\"Installation year\"] : \"\"+datum[\"Installation year\"], \"State\": isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], '\\n') : datum[\"State\"] : \"\"+datum[\"State\"], \"Total Systems Installed\": format(datum[\"sum_Installs_Num\"], \",\")}"
-              },
-              "description": {
-                "signal": "\"Year: \" + (isValid(datum[\"Installation year\"]) ? isArray(datum[\"Installation year\"]) ? join(datum[\"Installation year\"], ' ') : datum[\"Installation year\"] : \"\"+datum[\"Installation year\"]) + \"; Market Share (%): \" + (format(datum[\"sum_Installs_Num_end\"]-datum[\"sum_Installs_Num_start\"], \".0%\")) + \"; State / Territory: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"]) + \"; State: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"]) + \"; Total Systems Installed: \" + (format(datum[\"sum_Installs_Num\"], \",\"))"
-              },
-              "x": {"scale": "x", "field": "Installation year"},
-              "y": {"scale": "y", "field": "sum_Installs_Num_end"},
-              "y2": {"scale": "y", "field": "sum_Installs_Num_start"},
-              "defined": {
-                "signal": "isValid(datum[\"sum_Installs_Num\"]) && isFinite(+datum[\"sum_Installs_Num\"])"
-              }
-            }
+      "description": "TOP CHART: Focus View",
+      "width": 720,
+      "height": 300,
+      "mark": { "type": "area", "opacity": 0.9 },
+      "encoding": {
+        "x": {
+          "field": "Year",
+          "type": "temporal",
+          "scale": { "domain": { "param": "brush" } },
+          "axis": { "title": "", "grid": false, "labelFontSize": 12, "format": "%Y" }
+        },
+        "y": {
+          "field": "Installations",
+          "type": "quantitative",
+          "stack": "normalize",
+          "axis": {
+            "format": "%",
+            "title": "Market Share",
+            "titleFontSize": 13,
+            "labelFontSize": 12
           }
-        }
-      ]
+        },
+        "color": {
+          "field": "State",
+          "type": "nominal",
+          "scale": { "scheme": "tableau10" },
+          "legend": { "title": "State", "orient": "right" }
+        },
+        "tooltip": [
+          { "field": "Year", "type": "temporal", "title": "Year", "format": "%Y" },
+          { "field": "State", "type": "nominal" },
+          { "field": "Installations", "type": "quantitative", "title": "Installations", "format": "," }
+        ]
+      }
     },
     {
-      "name": "layer_1_pathgroup",
-      "type": "group",
-      "from": {
-        "facet": {
-          "name": "faceted_path_layer_1_main",
-          "data": "source_0",
-          "groupby": ["State"]
-        }
-      },
-      "encode": {
-        "update": {
-          "width": {"field": {"group": "width"}},
-          "height": {"field": {"group": "height"}}
-        }
-      },
-      "marks": [
+      "description": "BOTTOM CHART: Context / brush selector",
+      "width": 720,
+      "height": 60,
+      "mark": { "type": "area", "opacity": 0.4 },
+      "params": [
         {
-          "name": "layer_1_marks",
-          "type": "line",
-          "style": ["line"],
-          "sort": {"field": "x"},
-          "from": {"data": "faceted_path_layer_1_main"},
-          "encode": {
-            "update": {
-              "stroke": {"scale": "color", "field": "State"},
-              "tooltip": {
-                "signal": "{\"Year\": isValid(datum[\"Installation year\"]) ? isArray(datum[\"Installation year\"]) ? join(datum[\"Installation year\"], '\\n') : datum[\"Installation year\"] : \"\"+datum[\"Installation year\"], \"State\": isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], '\\n') : datum[\"State\"] : \"\"+datum[\"State\"], \"Total Systems Installed\": format(datum[\"sum_Installs_Num\"], \",\")}"
-              },
-              "description": {
-                "signal": "\"Year: \" + (isValid(datum[\"Installation year\"]) ? isArray(datum[\"Installation year\"]) ? join(datum[\"Installation year\"], ' ') : datum[\"Installation year\"] : \"\"+datum[\"Installation year\"]) + \"; Market Share (%): \" + (format(datum[\"sum_Installs_Num_end\"]-datum[\"sum_Installs_Num_start\"], \".0%\")) + \"; State / Territory: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"]) + \"; State: \" + (isValid(datum[\"State\"]) ? isArray(datum[\"State\"]) ? join(datum[\"State\"], ' ') : datum[\"State\"] : \"\"+datum[\"State\"]) + \"; Total Systems Installed: \" + (format(datum[\"sum_Installs_Num\"], \",\"))"
-              },
-              "x": {"scale": "x", "field": "Installation year"},
-              "y": {"scale": "y", "field": "sum_Installs_Num_end"},
-              "strokeWidth": {"value": 1},
-              "defined": {
-                "signal": "isValid(datum[\"sum_Installs_Num\"]) && isFinite(+datum[\"sum_Installs_Num\"])"
-              }
-            }
-          }
+          "name": "brush",
+          "select": { "type": "interval", "encodings": ["x"] }
         }
-      ]
-    }
-  ],
-  "scales": [
-    {
-      "name": "x",
-      "type": "point",
-      "domain": {
-        "data": "source_0",
-        "field": "Installation year",
-        "sort": true
-      },
-      "range": [0, {"signal": "width"}],
-      "padding": 0.5
-    },
-    {
-      "name": "y",
-      "type": "linear",
-      "domain": [0, 1],
-      "range": [{"signal": "height"}, 0],
-      "nice": true,
-      "zero": true
-    },
-    {
-      "name": "color",
-      "type": "ordinal",
-      "domain": {"data": "source_0", "field": "State", "sort": true},
-      "range": {"scheme": "tableau10"}
-    }
-  ],
-  "axes": [
-    {
-      "scale": "x",
-      "orient": "bottom",
-      "grid": false,
-      "title": "Year",
-      "labelAngle": 0,
-      "labelBaseline": "top",
-      "zindex": 0
-    },
-    {
-      "scale": "y",
-      "orient": "left",
-      "grid": false,
-      "title": "Market Share (%)",
-      "format": ".0%",
-      "labelOverlap": true,
-      "tickCount": {"signal": "ceil(height/40)"},
-      "zindex": 0
-    }
-  ],
-  "legends": [
-    {
-      "title": "State / Territory",
-      "fill": "color",
-      "symbolType": "circle",
-      "encode": {"symbols": {"update": {"opacity": {"value": 0.85}}}},
-      "stroke": "color"
+      ],
+      "encoding": {
+        "x": {
+          "field": "Year",
+          "type": "temporal",
+          "axis": {
+            "title": "Timeline Overview (Click and drag to select range)",
+            "titleFontSize": 12,
+            "grid": false,
+            "format": "%Y"
+          }
+        },
+        "y": {
+          "field": "Installations",
+          "type": "quantitative",
+          "stack": "normalize",
+          "axis": { "tickCount": 3, "grid": false, "labels": false, "title": "" }
+        },
+        "color": {
+          "field": "State",
+          "type": "nominal",
+          "legend": null
+        }
+      }
     }
   ],
   "config": {
-    "style": {
-      "guide-label": {"font": "sans-serif"},
-      "guide-title": {"font": "sans-serif"},
-      "group-title": {"font": "sans-serif"},
-      "group-subtitle": {"font": "sans-serif"},
-      "cell": {"stroke": "transparent"},
-      "text": {"font": "sans-serif"}
-    }
+    "view": { "stroke": "transparent" },
+    "font": "sans-serif"
   }
 }
