@@ -1,179 +1,95 @@
 {
-  "$schema": "https://vega.github.io/schema/vega/v5.json",
-  "background": "white",
-  "padding": 5,
-  "width": 750,
-  "height": 450,
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": {
-    "text": "Quantity vs. Quality: Solar Installations and Average System Size",
-    "subtitle": "Top 15 Postcodes by Installation Volume vs. Average Capacity (kW) per System",
+    "text": "The Renewable Ecosystem by State",
+    "subtitle": "Trellis Scatter Plot: Solar (X) vs. Heat Pump (Y) vs. Battery (Size)",
     "fontSize": 18,
     "anchor": "start",
     "color": "#2c3e50"
   },
-  "data": [
+  "data": {
+    "url": "https://raw.githubusercontent.com/ntlan94/FIT2179_DV2/main/data/sgu-solar-installations.csv",
+    "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
+  },
+  "transform": [
+    {"calculate": "toString(datum.Postcode)", "as": "PC"},
+    {"calculate": "isValid(datum.Total) ? datum.Total : 0", "as": "Solar"},
     {
-      "name": "source_1",
-      "url": "data/sgu-solar-capacity.csv",
-      "format": {"type": "csv", "delimiter": ","}
-    },
-    {
-      "name": "source_0",
-      "url": "data/sgu-solar-installations.csv",
-      "format": {"type": "csv", "delimiter": ","},
-      "transform": [
-        {"type": "formula", "expr": "toString(datum.Postcode)", "as": "PC"},
-        {"type": "formula", "expr": "toNumber(datum.Postcode)", "as": "p_num"},
-        {
-          "type": "formula",
-          "expr": "datum.p_num >= 3000 && datum.p_num <= 3999 || datum.p_num >= 8000 && datum.p_num <= 8999 ? 'VIC ' + datum.PC : datum.p_num >= 4000 && datum.p_num <= 4999 || datum.p_num >= 9000 && datum.p_num <= 9999 ? 'QLD ' + datum.PC : datum.p_num >= 5000 && datum.p_num <= 5999 ? 'SA ' + datum.PC : datum.p_num >= 6000 && datum.p_num <= 6999 ? 'WA ' + datum.PC : datum.p_num >= 7000 && datum.p_num <= 7999 ? 'TAS ' + datum.PC : datum.p_num >= 800 && datum.p_num <= 999 ? 'NT ' + datum.PC : datum.p_num >= 200 && datum.p_num <= 299 || datum.p_num >= 2600 && datum.p_num <= 2639 || datum.p_num >= 2900 && datum.p_num <= 2920 ? 'ACT ' + datum.PC : 'NSW ' + datum.PC",
-          "as": "Postcode_Label"
+      "lookup": "PC",
+      "from": {
+        "data": {
+          "url": "https://raw.githubusercontent.com/ntlan94/FIT2179_DV2/main/data/sgu-battery-installations.csv",
+          "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
         },
-        {
-          "type": "formula",
-          "expr": "toNumber(replace(datum.Total, /,/g, ''))",
-          "as": "Total_Clean"
-        },
-        {
-          "type": "lookup",
-          "from": "source_1",
-          "key": "Postcode",
-          "fields": ["PC"],
-          "values": ["Total"],
-          "as": ["Raw_Capacity"]
-        },
-        {
-          "type": "formula",
-          "expr": "toNumber(replace(datum.Raw_Capacity, /,/g, ''))",
-          "as": "Total_Capacity"
-        },
-        {
-          "type": "filter",
-          "expr": "datum.Total_Clean != null && datum.Total_Clean > 0 && datum.Total_Capacity != null"
-        },
-        {
-          "type": "formula",
-          "expr": "datum.Total_Capacity / datum.Total_Clean",
-          "as": "Avg_Capacity_kW"
-        },
-        {
-          "type": "window",
-          "as": ["rank"],
-          "ops": ["rank"],
-          "sort": {"field": ["Total_Clean"], "order": ["descending"]}
-        },
-        {"type": "filter", "expr": "datum.rank <= 15"},
-        {
-          "type": "collect",
-          "sort": {"field": "Total_Clean", "order": "descending"}
-        }
-      ]
-    },
-    {
-      "name": "data_1",
-      "source": "source_0",
-      "transform": [
-        {
-          "type": "stack",
-          "groupby": ["Postcode_Label"],
-          "field": "Total_Clean",
-          "as": ["Total_Clean_start", "Total_Clean_end"]
-        }
-      ]
-    }
-  ],
-  "scales": [
-    {
-      "name": "x",
-      "type": "band",
-      "domain": {
-        "data": "source_0",
-        "field": "Postcode_Label",
-        "sort": {"op": "sum", "field": "Total_Clean", "order": "descending"}
+        "key": "Postcode",
+        "fields": ["Total"]
       },
-      "range": "width",
-      "padding": 0.1
+      "as": ["Battery"]
     },
     {
-      "name": "y_bars",
-      "type": "linear",
-      "domain": {"data": "source_0", "field": "Total_Clean"},
-      "range": "height", "nice": true, "zero": true
+      "lookup": "PC",
+      "from": {
+        "data": {
+          "url": "https://raw.githubusercontent.com/ntlan94/FIT2179_DV2/main/data/swh-air-source-heat-pump-installations.csv",
+          "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
+        },
+        "key": "Postcode",
+        "fields": ["Total"]
+      },
+      "as": ["HP"]
     },
-    {
-      "name": "y_line",
-      "type": "linear",
-      "domain": {"data": "source_0", "field": "Avg_Capacity_kW"},
-      "range": "height", "zero": false, "nice": true
-    }
+    {"calculate": "isValid(datum.Battery) ? datum.Battery : 0", "as": "Battery_Num"},
+    {"calculate": "isValid(datum.HP) ? datum.HP : 0", "as": "HP_Num"},
+    {"calculate": "length(datum.PC) == 3 ? '0' + datum.PC : datum.PC", "as": "PC_pad"},
+    {"calculate": "datum.PC_pad[0] == '2' ? 'NSW' : datum.PC_pad[0] == '3' ? 'VIC' : datum.PC_pad[0] == '4' ? 'QLD' : datum.PC_pad[0] == '5' ? 'SA' : datum.PC_pad[0] == '6' ? 'WA' : datum.PC_pad[0] == '7' ? 'TAS' : 'Other'", "as": "State"},
+    {"filter": "datum.State != 'Other' && datum.Solar > 0 && datum.HP_Num > 0"}
   ],
-  "axes": [
-    {
-      "scale": "x",
-      "orient": "bottom",
-      "title": "Location (State + Postcode)",
-      "labelAngle": 315,
-      "labelAlign": "right"
-    },
-    {
-      "scale": "y_bars",
-      "orient": "left",
-      "title": "Total Installations (Bars)",
-      "titleColor": "#d35400",
-      "labelColor": "#d35400",
-      "grid": true
-    },
-    {
-      "scale": "y_line",
-      "orient": "right",
-      "title": "Avg System Capacity (kW) (Line)",
-      "titleColor": "#2c3e50",
-      "labelColor": "#2c3e50"
+  "columns": 3,
+  "facet": {
+    "field": "State",
+    "type": "nominal",
+    "title": null,
+    "sort": ["NSW", "VIC", "QLD", "WA", "SA", "TAS"]
+  },
+  "spec": {
+    "width": 180,
+    "height": 180,
+    "mark": {"type": "circle", "opacity": 0.6, "stroke": "black", "strokeWidth": 0.5},
+    "encoding": {
+      "x": {
+        "field": "Solar",
+        "type": "quantitative",
+        "title": "Solar Systems (Log Scale)",
+        "scale": {"type": "log", "domain": [1, 5000]}
+      },
+      "y": {
+        "field": "HP_Num",
+        "type": "quantitative",
+        "title": "Heat Pumps (Log Scale)",
+        "scale": {"type": "log", "domain": [1, 5000]}
+      },
+      "size": {
+        "field": "Battery_Num",
+        "type": "quantitative",
+        "title": "Batteries Installed",
+        "scale": {"range": [10, 400]}
+      },
+      "color": {
+        "field": "State",
+        "type": "nominal",
+        "scale": {"scheme": "category10"},
+        "legend": null
+      },
+      "tooltip": [
+        {"field": "PC", "type": "nominal", "title": "Postcode"},
+        {"field": "Solar", "type": "quantitative", "format": ","},
+        {"field": "HP_Num", "type": "quantitative", "title": "Heat Pumps", "format": ","},
+        {"field": "Battery_Num", "type": "quantitative", "title": "Batteries", "format": ","}
+      ]
     }
-  ],
-  "marks": [
-    {
-      "type": "rect",
-      "from": {"data": "source_0"},
-      "encode": {
-        "update": {
-          "x": {"scale": "x", "field": "Postcode_Label"},
-          "width": {"scale": "x", "band": 1},
-          "y": {"scale": "y_bars", "field": "Total_Clean"},
-          "y2": {"scale": "y_bars", "value": 0},
-          "fill": {"value": "#f39c12"},
-          "opacity": {"value": 0.8},
-          "cornerRadiusTopLeft": {"value": 4},
-          "cornerRadiusTopRight": {"value": 4},
-          "tooltip": {"signal": "{'Location': datum.Postcode_Label, 'Total Systems': format(datum.Total_Clean, ','), 'Total Capacity': format(datum.Total_Capacity, '.0f') + ' kW'}"}
-        }
-      }
-    },
-    {
-      "type": "line",
-      "from": {"data": "source_0"},
-      "encode": {
-        "update": {
-          "x": {"scale": "x", "field": "Postcode_Label", "band": 0.5},
-          "y": {"scale": "y_line", "field": "Avg_Capacity_kW"},
-          "stroke": {"value": "#2c3e50"},
-          "strokeWidth": {"value": 3},
-          "interpolate": {"value": "linear"}
-        }
-      }
-    },
-    {
-      "type": "symbol",
-      "from": {"data": "source_0"},
-      "encode": {
-        "update": {
-          "x": {"scale": "x", "field": "Postcode_Label", "band": 0.5},
-          "y": {"scale": "y_line", "field": "Avg_Capacity_kW"},
-          "fill": {"value": "#2c3e50"},
-          "size": {"value": 100},
-          "tooltip": {"signal": "{'Location': datum.Postcode_Label, 'Avg Size': format(datum.Avg_Capacity_kW, '.2f') + ' kW'}"}
-        }
-      }
-    }
-  ]
+  },
+  "config": {
+    "view": {"stroke": "transparent"},
+    "font": "sans-serif"
+  }
 }
