@@ -18,6 +18,14 @@
   "transform": [
     {"filter": "datum.Total > 0"},
     {
+      "calculate": "toNumber(datum.Postcode)",
+      "as": "p_num"
+    },
+    {
+      "calculate": "datum.p_num >= 3000 && datum.p_num <= 3999 || datum.p_num >= 8000 && datum.p_num <= 8999 ? 'VIC ' + datum.Postcode : datum.p_num >= 4000 && datum.p_num <= 4999 || datum.p_num >= 9000 && datum.p_num <= 9999 ? 'QLD ' + datum.Postcode : datum.p_num >= 5000 && datum.p_num <= 5999 ? 'SA ' + datum.Postcode : datum.p_num >= 6000 && datum.p_num <= 6999 ? 'WA ' + datum.Postcode : datum.p_num >= 7000 && datum.p_num <= 7999 ? 'TAS ' + datum.Postcode : datum.p_num >= 800 && datum.p_num <= 999 ? 'NT ' + datum.Postcode : datum.p_num >= 200 && datum.p_num <= 299 || datum.p_num >= 2600 && datum.p_num <= 2639 || datum.p_num >= 2900 && datum.p_num <= 2920 ? 'ACT ' + datum.Postcode : 'NSW ' + datum.Postcode",
+      "as": "Postcode_Label"
+    },
+    {
       "window": [{"op": "rank", "as": "rank"}],
       "sort": [{"field": "Total", "order": "descending"}]
     },
@@ -26,10 +34,10 @@
   ],
   "encoding": {
     "y": {
-      "field": "Postcode",
+      "field": "Postcode_Label",
       "type": "nominal",
       "sort": {"field": "Total", "order": "descending"},
-      "title": "Postcode",
+      "title": "Location",
       "axis": {
         "labelFontSize": 12,
         "titleFontSize": 14,
@@ -42,7 +50,12 @@
   "layer": [
     {
       "description": "Horizontal stick from baseline to Total",
-      "mark": {"type": "rule", "color": "#f39c12", "strokeWidth": 3, "opacity": 0.5},
+      "mark": {
+        "type": "rule",
+        "color": "#f39c12",
+        "strokeWidth": 3,
+        "opacity": 0.5
+      },
       "encoding": {
         "x": {"field": "baseline", "type": "quantitative"},
         "x2": {"field": "Total"}
@@ -50,7 +63,12 @@
     },
     {
       "description": "Vertical stick from dot down to x-axis",
-      "mark": {"type": "rule", "color": "#2980b9", "strokeWidth": 2, "opacity": 0.6},
+      "mark": {
+        "type": "rule",
+        "color": "#2980b9",
+        "strokeWidth": 2,
+        "opacity": 0.6
+      },
       "encoding": {
         "x": {
           "field": "Total",
@@ -62,7 +80,7 @@
     },
     {
       "description": "Circle at Total",
-      "mark": {"type": "circle", "size": 400, "color": "#f39c12"},
+      "mark": {"type": "circle", "size": 350, "color": "#000000"},
       "encoding": {
         "x": {
           "field": "Total",
@@ -72,8 +90,13 @@
           "axis": {"labelFontSize": 12, "titleFontSize": 14, "format": ","}
         },
         "tooltip": [
-          {"field": "Postcode", "type": "nominal"},
-          {"field": "Total", "type": "quantitative", "format": ",", "title": "Total Installations"}
+          {"field": "Postcode_Label", "type": "nominal", "title": "Location"},
+          {
+            "field": "Total",
+            "type": "quantitative",
+            "format": ",",
+            "title": "Total Installations"
+          }
         ]
       }
     }
