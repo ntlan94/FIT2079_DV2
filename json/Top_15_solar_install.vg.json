@@ -1,72 +1,35 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-
   "title": {
     "text": "Top 15 Australian Postcodes by Solar Installations",
     "fontSize": 18,
     "anchor": "start",
     "color": "#2c3e50"
   },
-
   "width": 800,
   "height": 500,
-
   "data": {
-    "url": "data/sgu-solar-installations.csv",
-
+    "url": "https://raw.githubusercontent.com/ntlan94/FIT2179_DV2/main/data/sgu-solar-installations.csv",
     "format": {
       "type": "csv",
-
-      "parse": {
-        "Postcode": "string",
-        "Total": "number"
-      }
+      "parse": {"Postcode": "string", "Total": "number"}
     }
   },
-
   "transform": [
+    {"filter": "datum.Total > 0"},
     {
-      "filter": "datum.Total > 0"
+      "window": [{"op": "rank", "as": "rank"}],
+      "sort": [{"field": "Total", "order": "descending"}]
     },
-
-    {
-      "window": [
-        {
-          "op": "rank",
-          "as": "rank"
-        }
-      ],
-
-      "sort": [
-        {
-          "field": "Total",
-          "order": "descending"
-        }
-      ]
-    },
-
-    {
-      "filter": "datum.rank <= 15"
-    },
-
-    {
-      "calculate": "950",
-      "as": "baseline"
-    }
+    {"filter": "datum.rank <= 15"},
+    {"calculate": "950", "as": "baseline"}
   ],
-
   "encoding": {
     "y": {
       "field": "Postcode",
       "type": "nominal",
-
-      "sort": {
-        "field": "Total",
-        "order": "descending"
-      },
-
+      "sort": {"field": "Total", "order": "descending"},
       "title": "Postcode",
-
       "axis": {
         "labelFontSize": 12,
         "titleFontSize": 14,
@@ -76,76 +39,44 @@
       }
     }
   },
-
   "layer": [
-
     {
-      "mark": {
-        "type": "rule",
-        "color": "#f39c12",
-        "strokeWidth": 3,
-        "opacity": 0.5
-      },
-
+      "description": "Horizontal stick from baseline to Total",
+      "mark": {"type": "rule", "color": "#f39c12", "strokeWidth": 3, "opacity": 0.5},
       "encoding": {
-        "x": {
-          "field": "baseline",
-          "type": "quantitative"
-        },
-
-        "x2": {
-          "field": "Total"
-        }
+        "x": {"field": "baseline", "type": "quantitative"},
+        "x2": {"field": "Total"}
       }
     },
-
     {
-      "mark": {
-        "type": "circle",
-        "size": 400,
-        "color": "#f39c12"
-      },
-
+      "description": "Vertical stick from dot down to x-axis",
+      "mark": {"type": "rule", "color": "#2980b9", "strokeWidth": 2, "opacity": 0.6},
       "encoding": {
         "x": {
           "field": "Total",
           "type": "quantitative",
-
-          "title": "Total Installations",
-
-          "scale": {
-            "domainMin": 950
-          },
-
-          "axis": {
-            "labelFontSize": 12,
-            "titleFontSize": 14,
-            "format": ","
-          }
+          "scale": {"domainMin": 950}
         },
-
+        "y2": {"value": 500}
+      }
+    },
+    {
+      "description": "Circle at Total",
+      "mark": {"type": "circle", "size": 400, "color": "#f39c12"},
+      "encoding": {
+        "x": {
+          "field": "Total",
+          "type": "quantitative",
+          "title": "Total Installations",
+          "scale": {"domainMin": 950},
+          "axis": {"labelFontSize": 12, "titleFontSize": 14, "format": ","}
+        },
         "tooltip": [
-          {
-            "field": "Postcode",
-            "type": "nominal"
-          },
-
-          {
-            "field": "Total",
-            "type": "quantitative",
-            "format": ",",
-            "title": "Total Installations"
-          }
+          {"field": "Postcode", "type": "nominal"},
+          {"field": "Total", "type": "quantitative", "format": ",", "title": "Total Installations"}
         ]
       }
     }
   ],
-
-  "config": {
-    "view": {
-      "stroke": "transparent"
-    },
-
-    "font": "sans-serif"
-  }
+  "config": {"view": {"stroke": "transparent"}, "font": "sans-serif"}
 }
