@@ -1,8 +1,7 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": {
-    "text": "Top 15 Australian Postcodes: Installations vs. Capacity",
-    "subtitle": "Dual-Axis Lollipop Chart highlighting installation counts and total capacity (kW)",
+    "text": "Top 15 Australian Postcodes by Solar Installations",
     "fontSize": 18,
     "anchor": "start",
     "color": "#2c3e50"
@@ -11,7 +10,7 @@
   "height": 500,
   "data": {
     "url": "data/sgu-solar-installations.csv",
-    "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number", "Capacity": "number"}}
+    "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
   },
   "transform": [
     {"filter": "datum.Total > 0"},
@@ -21,6 +20,12 @@
     },
     {"filter": "datum.rank <= 15"}
   ],
+  "mark": {
+    "type": "circle",
+    "size": 400,
+    "color": "#f39c12",
+    "opacity": 1
+  },
   "encoding": {
     "y": {
       "field": "Postcode",
@@ -28,60 +33,24 @@
       "sort": {"field": "Total", "order": "descending"},
       "title": "Postcode",
       "axis": {
+        "labelFontSize": 12, 
+        "titleFontSize": 14,
         "grid": true,
         "gridDash": [4, 4],
         "gridColor": "#e0e0e0"
       }
-    }
-  },
-  "layer": [
-    {
-      "description": "Group 1: Orange Stick and Dot for Installations (Lower Axis)",
-      "layer": [
-        {
-          "mark": {"type": "rule", "color": "#f39c12", "strokeWidth": 3, "opacity": 0.6},
-          "encoding": {
-            "x": {"datum": 950},
-            "x2": {"field": "Total"}
-          }
-        },
-        {
-          "mark": {"type": "circle", "size": 300, "color": "#f39c12", "opacity": 1},
-          "encoding": {
-            "x": {
-              "field": "Total",
-              "type": "quantitative",
-              "title": "Total Installations (Orange)",
-              "scale": {"domainMin": 950},
-              "axis": {"titleColor": "#f39c12", "labelColor": "#f39c12", "orient": "bottom"}
-            },
-            "tooltip": [
-              {"field": "Postcode", "type": "nominal"},
-              {"field": "Total", "type": "quantitative", "title": "Installations", "format": ","}
-            ]
-          }
-        }
-      ]
     },
-    {
-      "description": "Group 2: Blue Dot for Capacity (Upper Axis)",
-      "mark": {"type": "circle", "size": 300, "color": "#2980b9", "opacity": 1},
-      "encoding": {
-        "x": {
-          "field": "Capacity",
-          "type": "quantitative",
-          "title": "Total Capacity in kW (Blue)",
-          "axis": {"titleColor": "#2980b9", "labelColor": "#2980b9", "orient": "top"}
-        },
-        "tooltip": [
-          {"field": "Postcode", "type": "nominal"},
-          {"field": "Capacity", "type": "quantitative", "title": "Capacity (kW)", "format": ","}
-        ]
-      }
-    }
-  ],
-  "resolve": {
-    "scale": {"x": "independent"}
+    "x": {
+      "field": "Total",
+      "type": "quantitative",
+      "title": "Total Installations",
+      "scale": {"domainMin": 950},
+      "axis": {"labelFontSize": 12, "titleFontSize": 14}
+    },
+    "tooltip": [
+      {"field": "Postcode", "type": "nominal"},
+      {"field": "Total", "type": "quantitative", "format": ",", "title": "Total Installations"}
+    ]
   },
   "config": {
     "view": {"stroke": "transparent"},
