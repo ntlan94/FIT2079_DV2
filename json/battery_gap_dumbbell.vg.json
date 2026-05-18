@@ -8,7 +8,7 @@
     "color": "#2c3e50"
   },
   "data": {
-    "url": "https://raw.githubusercontent.com/ntlan94/FIT2179_DV2/main/data/sgu-solar-installations.csv",
+    "url": "data/sgu-solar-installations.csv",
     "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
   },
   "transform": [
@@ -18,7 +18,7 @@
       "lookup": "PC",
       "from": {
         "data": {
-          "url": "https://raw.githubusercontent.com/ntlan94/FIT2179_DV2/main/data/sgu-battery-installations.csv",
+          "url": "data/sgu-battery-installations.csv",
           "format": {"type": "csv", "parse": {"Postcode": "string", "Total": "number"}}
         },
         "key": "Postcode",
