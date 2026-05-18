@@ -123,6 +123,35 @@
       <strong>Insight:</strong> This Dumbbell Plot serves as the conclusion to our analysis. While Australia leads the world in rooftop solar adoption (yellow dots), there is a massive "storage gap." The purple dots show that battery adoption is lagging far behind. The next major phase of Australia's energy transition will not be about generating more power, but storing it.
     </p>
   </div>
+  <div class="container">
+    <div id="vis12" class="vis-container"></div>
+    
+    <div style="display: flex; flex-direction: column; align-items: center; margin-top: 20px;">
+      <p style="font-weight: bold; margin-bottom: 5px; color: #2c3e50;">Bivariate Legend</p>
+      <div style="display: grid; grid-template-columns: auto auto auto auto; gap: 2px; align-items: center;">
+        <div style="rotate: -90deg; font-size: 12px; color: #7f8c8d; margin-right: 10px;">More Battery &rarr;</div>
+        
+        <div style="width: 30px; height: 30px; background-color: #5ac8c8;"></div>
+        <div style="width: 30px; height: 30px; background-color: #5698b9;"></div>
+        <div style="width: 30px; height: 30px; background-color: #3b4994;"></div>
+        
+        <div></div> <div style="width: 30px; height: 30px; background-color: #ace4e4;"></div>
+        <div style="width: 30px; height: 30px; background-color: #a5add3;"></div>
+        <div style="width: 30px; height: 30px; background-color: #8c62aa;"></div>
+        
+        <div></div>
+        
+        <div style="width: 30px; height: 30px; background-color: #e8e8e8;"></div>
+        <div style="width: 30px; height: 30px; background-color: #dfb0d6;"></div>
+        <div style="width: 30px; height: 30px; background-color: #be64ac;"></div>
+      </div>
+      <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px; margin-left: 20px;">More Solar &rarr;</div>
+    </div>
+
+    <p style="font-size: 13px; color: #666; margin-top: 15px; font-style: italic; max-width: 800px; text-align: center;">
+      <strong>Insight:</strong> This Bivariate Choropleth Map reveals the true storage gap geographically. Dark pink areas indicate postcodes that heavily adopted solar but ignored battery storage. The rare dark blue areas represent the ultimate goal: high adoption of both technologies.
+    </p>
+  </div>
   <!--<div style="max-width: 800px; text-align: center; margin-top: 20px; margin-bottom: 60px; padding: 30px; background-color: #2c3e50; color: white; border-radius: 12px;">
     <h2 style="margin-top: 0; color: #f1c40f;">Conclusion</h2>
     <p style="line-height: 1.6; font-size: 16px;">
@@ -166,6 +195,9 @@
 
     var spec11 = "json/battery_gap_dumbbell.vg.json";
     vegaEmbed('#vis11', spec11).catch(console.error);
+
+    var spec12 = "json/bivariate_map.vg.json";
+    vegaEmbed('#vis12', spec12).catch(console.error);
   </script>
 
 </body>
